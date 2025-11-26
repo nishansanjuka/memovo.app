@@ -3,5 +3,10 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "typescript.preferences.importModuleSpecifier": "relative",
+    "python.defaultInterpreterPath": "${workspaceFolder}/apps/llm-service/.venv/Scripts/python.exe",
+    "python.terminal.activateEnvironment": true,
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic"
 }
