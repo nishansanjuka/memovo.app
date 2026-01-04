@@ -1,20 +1,63 @@
 package app.memovo.api.controller;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+/**
+ * Health Check API
+ *
+ * Provides public system health status endpoint for monitoring and readiness
+ * probes. This endpoint is NOT protected - accessible without authentication.
+ *
+ * @author Memovo Team
+ * @version 0.0.1
+ * @since 0.0.1
+ */
 @RestController
+@RequestMapping("/health")
+@Tag(name = "Health", description = "Public health and readiness endpoints (no authentication required)")
 public class HealthCheckController {
+
     private final app.memovo.api.application.HealthCheckService service;
 
-    public HealthCheckController() {
-        // Manual wiring for demo; use DI in real projects
-        this.service = new app.memovo.api.application.HealthCheckService(new app.memovo.api.infrastructure.MockHealthRepository());
+    public HealthCheckController(app.memovo.api.application.HealthCheckService service) {
+        this.service = service;
     }
 
-    @GetMapping("/healthcheck")
-    public java.util.Map<String, String> healthcheck() {
+    /**
+     * Health Check
+     *
+     * Returns the current health status of the application. Useful for load
+     * balancers, Kubernetes readiness probes, and monitoring systems. This
+     * endpoint is public and does not require authentication.
+     *
+     * @return Map containing the health status (e.g., {"status": "OK"})
+     * @apiNote Public endpoint - no authentication required
+     * @author Memovo Team
+     * @since 0.0.1
+     */
+    @Operation(
+            summary = "Public health check",
+            description = "Returns application health status without requiring authentication. Suitable for load balancers, Kubernetes probes, and monitoring systems that cannot provide JWT tokens.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "Health status returned",
+                        content = @Content(schema = @Schema(implementation = Map.class))),
+                @ApiResponse(responseCode = "500", description = "Server error", content = @Content)
+            }
+    )
+    @GetMapping
+    public Map<String, String> healthcheck() {
         app.memovo.api.domain.HealthStatus status = service.getHealthStatus();
-        return java.util.Collections.singletonMap("status", status.getStatus());
+        return Collections.singletonMap("status", status.getStatus());
     }
 }
