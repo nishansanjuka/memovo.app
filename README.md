@@ -14,7 +14,7 @@ A modern full-stack application built with a microservices architecture, featuri
 - [Testing](#testing)
 - [Deployment](#deployment)
 
-## 🎯 Overview
+## Overview
 
 Memovo is a comprehensive application platform designed with:
 
@@ -24,7 +24,7 @@ Memovo is a comprehensive application platform designed with:
 - **Cloud-Ready** - Containerized with health checks and monitoring
 - **Mobile-First** - Cross-platform Flutter mobile application
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 memovo.app/
@@ -49,7 +49,7 @@ Gateway Service (NestJS) ← API Gateway & Router
 └→ LLM Service (Python)      ← AI/ML Processing
 ```
 
-## 🔧 Prerequisites
+## Prerequisites
 
 ### Required
 
@@ -66,7 +66,7 @@ Gateway Service (NestJS) ← API Gateway & Router
 - **Kubernetes** (for orchestration)
 - **Postman** (for API testing)
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone Repository
 
@@ -108,7 +108,7 @@ pnpm --filter llm-service dev
 pnpm --filter mobile dev
 ```
 
-## 📦 Apps & Services
+## Apps & Services
 
 ### 🔷 API Service (Spring Boot)
 
@@ -211,7 +211,7 @@ flutter pub get
 flutter run
 ```
 
-## 🛠️ Development
+## Development
 
 ### Workspace Commands
 
@@ -260,7 +260,7 @@ turbo lint
 turbo format
 ```
 
-## 🏗️ Building
+## Building
 
 ### Build All Services
 
@@ -299,7 +299,7 @@ flutter build ios       # iOS
 - **Gateway:** `apps/gateway-service/dist/`
 - **Mobile:** `apps/mobile/build/`
 
-## 🧪 Testing
+## Testing
 
 ### Run All Tests
 
@@ -332,7 +332,7 @@ View test coverage reports in each service's directory:
 - API: `apps/api/target/surefire-reports/`
 - Gateway: `apps/gateway-service/coverage/`
 
-## 🚀 Deployment
+## Deployment
 
 ### Docker
 
@@ -377,7 +377,7 @@ Each service requires specific environment variables. See individual service REA
 - Gateway Environment Variables
 - LLM Service Environment Variables
 
-## 📚 Documentation
+## Documentation
 
 ### API Documentation
 
@@ -392,7 +392,7 @@ Each service requires specific environment variables. See individual service REA
 - [LLM Service](apps/llm-service/README.md)
 - [Mobile App](apps/mobile/README.md)
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -417,7 +417,7 @@ pnpm build
 pnpm install --force
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Create a feature branch
 2. Make your changes
@@ -425,11 +425,11 @@ pnpm install --force
 4. Update documentation
 5. Submit a pull request
 
-## 📄 License
+## License
 
 Copyright © 2026 Memovo Team
 
-## 📞 Support
+## Support
 
 - **API Issues:** Check [API README](apps/api/README.md)
 - **Gateway Issues:** Check Gateway service logs
