@@ -1,7 +1,7 @@
 package app.memovo.api.config;
 
-import app.memovo.api.security.ClerkAuthenticationFilter;
-import app.memovo.api.security.CurrentUserArgumentResolver;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -9,10 +9,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.List;
+import app.memovo.api.security.ClerkAuthenticationFilter;
+import app.memovo.api.security.CurrentUserArgumentResolver;
 
 /**
- * Web MVC configuration for Clerk authentication
+ * Web MVC configuration for Clerk authentication and static resources
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -30,6 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     /**
      * Register the Clerk authentication filter to intercept /api/v1/** requests
+     * Swagger UI and API docs are automatically excluded from authentication
      */
     @Bean
     public FilterRegistrationBean<ClerkAuthenticationFilter> clerkFilter() {

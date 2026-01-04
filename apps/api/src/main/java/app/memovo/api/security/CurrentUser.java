@@ -6,12 +6,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to inject the authenticated Clerk user into controller methods
+ * Annotation to inject the authenticated user into controller methods
  * 
  * Usage:
  * @GetMapping("/profile")
- * public ResponseEntity<?> getProfile(@CurrentUser ClerkUser user) {
- *     return ResponseEntity.ok(user);
+ * public ResponseEntity<?> getProfile(@CurrentUser User user) {
+ *     return ResponseEntity.ok(Map.of(
+ *         "id", user.getId(),
+ *         "email", user.getEmail(),
+ *         "status", user.getStatus()
+ *     ));
  * }
  */
 @Target(ElementType.PARAMETER)

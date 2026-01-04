@@ -1,34 +1,25 @@
 package app.memovo.api.security;
 
-import java.util.Map;
-
 /**
- * Represents an authenticated Clerk user
+ * Represents an authenticated Clerk user exposed to controllers via
+ *
+ * @CurrentUser.
  */
 public class ClerkUser {
-    private final String userId;
-    private final String email;
-    private final Map<String, Object> claims;
 
-    public ClerkUser(String userId, String email, Map<String, Object> claims) {
-        this.userId = userId;
+    private final String id;
+    private final String email;
+
+    public ClerkUser(String id, String email) {
+        this.id = id;
         this.email = email;
-        this.claims = claims;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getId() {
+        return id;
     }
 
     public String getEmail() {
         return email;
-    }
-
-    public Map<String, Object> getClaims() {
-        return claims;
-    }
-
-    public Object getClaim(String key) {
-        return claims != null ? claims.get(key) : null;
     }
 }

@@ -1,8 +1,15 @@
 {
-	"name": "api",
-	"version": "1.0.0",
-	"type": "module",
-	"scripts": {
-		"dev": "mvn spring-boot:run"
-	}
+  "name": "api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "mvn spring-boot:run",
+    "sync:postman": "dotenv -e .env -- powershell -ExecutionPolicy Bypass -File ./scripts/sync-collection.ps1",
+    "sync:postman:env": "dotenv -e .env -- powershell -ExecutionPolicy Bypass -File ./scripts/sync-environment.ps1",
+    "sync:postman:all": "pnpm run sync:postman && pnpm run sync:postman:env"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^7.4.2",
+    "openapi-to-postmanv2": "^5.7.0"
+  }
 }

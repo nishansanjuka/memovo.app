@@ -1,14 +1,11 @@
 package app.memovo.api.security;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.clerk.backend_api.helpers.security.VerifyToken;
-import com.clerk.backend_api.helpers.security.models.SessionAuthObjectV2;
 import com.clerk.backend_api.helpers.security.models.TokenVerificationException;
 import com.clerk.backend_api.helpers.security.models.VerifyTokenOptions;
 import com.clerk.backend_api.models.errors.ClerkErrors;
@@ -68,26 +65,22 @@ public class ClerkAuthenticationFilter implements Filter {
                     .build();
 
             com.clerk.backend_api.helpers.security.models.TokenVerificationResponse<?> verifyResponse = VerifyToken.verifyToken(token, options);
-            SessionAuthObjectV2 sessionAuth = (SessionAuthObjectV2) verifyResponse.payload();
 
-            // Extract user information from verified token
-            String userId = sessionAuth.getSub();
-            String email = sessionAuth.getEmail();
+            // The payload is actually a JWT Claims object
+            Object payload = verifyResponse.payload();
 
-            // Get additional claims
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("sid", sessionAuth.getSid());
-            claims.put("sub", sessionAuth.getSub());
-            claims.put("iss", sessionAuth.getIss());
-            claims.put("azp", sessionAuth.getAzp());
-            claims.put("email", email);
-            claims.put("role", sessionAuth.getRole());
-            claims.put("jti", sessionAuth.getJti());
+            if (payload == null) {
+                throw new ServletException("Token verification returned null payload");
+            }
 
-            ClerkUser clerkUser = new ClerkUser(userId, email, claims);
+            if (!(payload instanceof io.jsonwebtoken.Claims)) {
+                throw new ServletException("Unexpected payload type: " + payload.getClass().getName());
+            }
 
-            // Store user in request attributes for later retrieval
-            httpRequest.setAttribute("clerk.user", clerkUser);
+            io.jsonwebtoken.Claims claims = (io.jsonwebtoken.Claims) payload;
+
+            // Store claims in request attributes for later retrieval
+            httpRequest.setAttribute("clerk.claims", claims);
 
             chain.doFilter(request, response);
 
