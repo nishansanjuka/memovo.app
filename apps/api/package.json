@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "mvn spring-boot:run",
+    "test": "mvn test",
     "sync:postman": "dotenv -e .env -- powershell -ExecutionPolicy Bypass -File ./scripts/sync-collection.ps1",
     "sync:postman:env": "dotenv -e .env -- powershell -ExecutionPolicy Bypass -File ./scripts/sync-environment.ps1",
     "sync:postman:all": "pnpm run sync:postman && pnpm run sync:postman:env"

@@ -30,9 +30,8 @@ public class HealthCheckController {
 
     private final app.memovo.api.application.HealthCheckService service;
 
-    public HealthCheckController() {
-        // Manual wiring for demo; use DI in real projects
-        this.service = new app.memovo.api.application.HealthCheckService(new app.memovo.api.infrastructure.MockHealthRepository());
+    public HealthCheckController(app.memovo.api.application.HealthCheckService service) {
+        this.service = service;
     }
 
     /**
