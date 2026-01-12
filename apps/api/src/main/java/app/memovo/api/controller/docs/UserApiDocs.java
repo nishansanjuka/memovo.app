@@ -1,7 +1,6 @@
 package app.memovo.api.controller.docs;
 
-import app.memovo.api.controller.dto.ProtectedResponse;
-import app.memovo.api.controller.dto.UserProfileResponse;
+import app.memovo.api.controller.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,71 +8,71 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 /**
- * OpenAPI documentation definitions for User endpoints
+ * OpenAPI documentation definitions for User CRUD endpoints
  */
 public class UserApiDocs {
 
-    public static final String GET_PROFILE_SUMMARY = "Get authenticated user profile";
-    
-    public static final String GET_PROFILE_DESCRIPTION = 
-        "Retrieves the authenticated user's profile information including unique identifier, email address, " +
-        "and current account status. All data is extracted from the verified Clerk JWT token claims. " +
-        "This endpoint is essential for client applications to obtain the current user's basic information " +
-        "after successful authentication. The response provides minimal user context without additional database lookups.";
+    public static final String CREATE_USER_SUMMARY = "Create a new user";
+    public static final String CREATE_USER_DESCRIPTION = "Creates a new user in the system with the provided information.";
 
-    public static final String PROTECTED_ENDPOINT_SUMMARY = "Protected endpoint example";
-    
-    public static final String PROTECTED_ENDPOINT_DESCRIPTION = 
-        "Demonstrates a protected route that requires valid Clerk JWT authentication. Returns a success message " +
-        "along with the authenticated user's id to confirm the authentication middleware is working correctly. " +
-        "This endpoint serves as a reference implementation for developers building additional protected routes " +
-        "and validates that the @CurrentUser annotation properly injects authenticated user context into controller methods.";
+    public static final String GET_USER_SUMMARY = "Get user by ID";
+    public static final String GET_USER_DESCRIPTION = "Retrieves a user's details by their unique identifier.";
+
+    public static final String UPDATE_USER_SUMMARY = "Update an existing user";
+    public static final String UPDATE_USER_DESCRIPTION = "Updates the information of an existing user.";
+
+    public static final String DELETE_USER_SUMMARY = "Delete a user";
+    public static final String DELETE_USER_DESCRIPTION = "Permanently deletes a user from the system.";
 
     @Operation(
-        summary = GET_PROFILE_SUMMARY,
-        description = GET_PROFILE_DESCRIPTION,
+        summary = CREATE_USER_SUMMARY,
+        description = CREATE_USER_DESCRIPTION,
         security = {@SecurityRequirement(name = "BearerAuth")},
         responses = {
-            @ApiResponse(
-                responseCode = "200",
-                description = "User profile retrieved successfully",
-                content = @Content(schema = @Schema(implementation = UserProfileResponse.class))
-            ),
-            @ApiResponse(
-                responseCode = "401",
-                description = "Missing, invalid, or expired JWT token in Authorization header",
-                content = @Content
-            ),
-            @ApiResponse(
-                responseCode = "500",
-                description = "Internal server error occurred while retrieving profile",
-                content = @Content
-            )
+            @ApiResponse(responseCode = "201", description = "User created successfully",
+                content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
         }
     )
-    public @interface GetProfileOperation {}
+    public @interface CreateUserOperation {}
 
     @Operation(
-        summary = PROTECTED_ENDPOINT_SUMMARY,
-        description = PROTECTED_ENDPOINT_DESCRIPTION,
+        summary = GET_USER_SUMMARY,
+        description = GET_USER_DESCRIPTION,
         security = {@SecurityRequirement(name = "BearerAuth")},
         responses = {
-            @ApiResponse(
-                responseCode = "200",
-                description = "Protected endpoint accessed successfully",
-                content = @Content(schema = @Schema(implementation = ProtectedResponse.class))
-            ),
-            @ApiResponse(
-                responseCode = "401",
-                description = "Missing, invalid, or expired JWT token in Authorization header",
-                content = @Content
-            ),
-            @ApiResponse(
-                responseCode = "500",
-                description = "Internal server error occurred",
-                content = @Content
-            )
+            @ApiResponse(responseCode = "200", description = "User found",
+                content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
         }
     )
-    public @interface ProtectedEndpointOperation {}
+    public @interface GetUserOperation {}
+
+    @Operation(
+        summary = UPDATE_USER_SUMMARY,
+        description = UPDATE_USER_DESCRIPTION,
+        security = {@SecurityRequirement(name = "BearerAuth")},
+        responses = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully",
+                content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+        }
+    )
+    public @interface UpdateUserOperation {}
+
+    @Operation(
+        summary = DELETE_USER_SUMMARY,
+        description = DELETE_USER_DESCRIPTION,
+        security = {@SecurityRequirement(name = "BearerAuth")},
+        responses = {
+            @ApiResponse(responseCode = "204", description = "User deleted successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+        }
+    )
+    public @interface DeleteUserOperation {}
 }
