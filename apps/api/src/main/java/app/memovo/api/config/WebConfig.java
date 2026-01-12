@@ -11,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import app.memovo.api.security.ClerkAuthenticationFilter;
 import app.memovo.api.security.CurrentUserArgumentResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 /**
  * Web MVC configuration for Clerk authentication and static resources
@@ -27,6 +28,15 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(currentUserArgumentResolver);
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 
     /**
