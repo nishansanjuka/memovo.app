@@ -411,15 +411,18 @@ Each service requires specific environment variables. See individual service REA
 
 ## Documentation
 
-### API Documentation
 
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **OpenAPI Spec:** http://localhost:8080/api-docs
-- **Postman Collection:** Auto-synced (see [API README](apps/api/README.md#postman-integration))
+### Documentation App
+
+Memovo uses a dedicated documentation app located at `apps/docs` for all service and API documentation, guides, and architecture references.
+
+- Browse API endpoints, usage guides, and architecture diagrams in one place
+- Edit and extend documentation using MDX and TypeScript config
+- See [apps/docs/README.md](apps/docs/README.md) for setup and customization
 
 ### Service READMEs
 
-- [API Service](apps/api/README.md) - Complete API documentation
+- [API Service](apps/api/README.md)
 - [Gateway Service](apps/gateway-service/README.md)
 - [LLM Service](apps/llm-service/README.md)
 - [Mobile App](apps/mobile/README.md)
