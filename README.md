@@ -349,6 +349,38 @@ docker build -t memovo-gateway ./apps/gateway-service
 docker build -t memovo-llm ./apps/llm-service
 ```
 
+### Jenkins (docker-compose)
+
+You can run a local Jenkins instance using the repository's `docker-compose.yml`.
+
+Commands:
+
+```bash
+# Start Jenkins
+docker-compose up -d
+
+# Stop Jenkins
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Restart Jenkins
+docker-compose restart
+
+# Stop and remove volumes (CAUTION: deletes all data)
+docker-compose down -v
+
+# Backup Jenkins home
+docker exec jenkins tar czf /backup/jenkins-backup-$(date +%Y%m%d).tar.gz -C /var/jenkins_home .
+ 
+# Get initial admin password (first use)
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+On first use Jenkins will prompt for the initial admin password — retrieve it with the command above.
+Access the web UI at http://localhost:{port}/jenkins (replace `{port}` with the mapped HTTP port in `docker-compose.yml`, default `8080`).
+
 ### Kubernetes
 
 Health check configuration example:
