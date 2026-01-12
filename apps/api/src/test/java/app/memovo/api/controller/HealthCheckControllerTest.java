@@ -1,7 +1,5 @@
 package app.memovo.api.controller;
 
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +9,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.memovo.api.application.HealthCheckService;
+import app.memovo.api.controller.dto.HealthCheckResponse;
 import app.memovo.api.domain.HealthStatus;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,9 +26,9 @@ class HealthCheckControllerTest {
         HealthStatus healthStatus = new HealthStatus("OK");
         when(service.getHealthStatus()).thenReturn(healthStatus);
 
-        Map<String, String> response = controller.healthcheck();
+        HealthCheckResponse response = controller.healthcheck();
 
-        assertThat(response).containsEntry("status", "OK");
+        assertThat(response.status()).isEqualTo("OK");
     }
 
     @Test
@@ -37,8 +36,8 @@ class HealthCheckControllerTest {
         HealthStatus degradedStatus = new HealthStatus("DEGRADED");
         when(service.getHealthStatus()).thenReturn(degradedStatus);
 
-        Map<String, String> response = controller.healthcheck();
+        HealthCheckResponse response = controller.healthcheck();
 
-        assertThat(response).containsEntry("status", "DEGRADED");
+        assertThat(response.status()).isEqualTo("DEGRADED");
     }
 }

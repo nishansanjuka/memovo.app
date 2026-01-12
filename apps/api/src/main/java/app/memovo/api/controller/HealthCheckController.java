@@ -1,12 +1,13 @@
 package app.memovo.api.controller;
 
-import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import app.memovo.api.controller.dto.HealthCheckResponse;
+import app.memovo.api.controller.mapper.HealthMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -56,8 +57,8 @@ public class HealthCheckController {
             }
     )
     @GetMapping
-    public Map<String, String> healthcheck() {
+    public HealthCheckResponse healthcheck() {
         app.memovo.api.domain.HealthStatus status = service.getHealthStatus();
-        return Collections.singletonMap("status", status.getStatus());
+        return HealthMapper.toDto(status);
     }
 }
