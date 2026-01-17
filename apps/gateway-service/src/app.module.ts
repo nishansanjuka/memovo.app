@@ -1,10 +1,20 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ApiModule } from './modules/api/api.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { ConfigModule as NestConfigModule } from '@nestjs/config';
+import { configuration } from './shared/config';
+import { ConfigService } from './shared/services/config.service';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    NestConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
+    ApiModule,
+    WebhooksModule,
+  ],
+  controllers: [],
+  providers: [ConfigService],
 })
 export class AppModule {}

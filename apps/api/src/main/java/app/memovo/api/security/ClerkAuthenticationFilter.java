@@ -42,13 +42,16 @@ public class ClerkAuthenticationFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        String path = httpRequest.getRequestURI();
+
+        //  whole authentications will be handled by Gateway now. so we skip path check here.
+
+        // String path = httpRequest.getRequestURI();
 
         // Only apply authentication to /api/v1/** paths
-        if (!path.startsWith("/api/v1/")) {
-            chain.doFilter(request, response);
-            return;
-        }
+        // if (!path.startsWith("/api/v1/")) {
+        //     chain.doFilter(request, response);
+        //     return;
+        // }
 
         try {
             // Extract token from Authorization header
