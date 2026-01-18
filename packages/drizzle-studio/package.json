@@ -1,0 +1,22 @@
+{
+  "name": "@memovo.app/drizzle-studio",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "drizzle-kit studio",
+    "drizzle": "drizzle-kit",
+    "db:studio": "drizzle-kit studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "drizzle-kit": "^0.31.8"
+  },
+  "dependencies": {
+    "@memovo.app/typescript-config": "workspace:^",
+    "drizzle-orm": "^0.45.1",
+    "postgres": "^3.4.8"
+  }
+}

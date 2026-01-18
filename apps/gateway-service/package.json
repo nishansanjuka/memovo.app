@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@clerk/express": "^1.7.63",
+    "@memovo.app/types": "workspace:^",
     "@memovo.app/utils": "workspace:^",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",

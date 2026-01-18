@@ -1,0 +1,39 @@
+{
+  "name": "@memovo.app/types",
+  "version": "0.1.0",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./path": {
+      "import": "./dist/path-constants.mjs",
+      "require": "./dist/path-constants.js",
+      "types": "./dist/path-constants.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "bunchee src/index.ts && tsc src/path-constants.ts --module commonjs --target es2020 --outDir dist --declaration",
+    "clean": "rm -rf dist",
+    "generate:schemas": "openapi-typescript http://localhost:8080/api-docs --output src/api-types.d.ts",
+    "generate:path-constants": "node scripts/generate-path-constants.js http://localhost:8080/api-docs src/path-constants.ts",
+    "generate:schemas-ts": "node scripts/generate-schemas.js http://localhost:8080/api-docs src/api-schema.ts"
+  },
+  "devDependencies": {
+    "@memovo.app/typescript-config": "workspace:^",
+    "bunchee": "^5.0.0",
+    "openapi-typescript": "^6.7.6",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "axios": "^1.13.2"
+  }
+}

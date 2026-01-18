@@ -1,0 +1,15 @@
+{
+  "extends": "@memovo.app/typescript-config/base.json",
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@memovo.app/types/path-constants": [
+        "../../packages/types/src/path-constants"
+      ],
+      "@memovo.app/types/schemas": ["../../packages/types/src/schemas"]
+    }
+  },
+  "include": ["src"]
+}
