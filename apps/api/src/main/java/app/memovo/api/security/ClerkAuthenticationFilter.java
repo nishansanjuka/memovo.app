@@ -29,6 +29,9 @@ public class ClerkAuthenticationFilter implements Filter {
     @Value("${clerk.secret.key:}")
     private String clerkSecretKey;
 
+    @Value("${api.key:}")
+    private String apiKey;
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         if (clerkSecretKey == null || clerkSecretKey.isEmpty()) {
@@ -44,17 +47,25 @@ public class ClerkAuthenticationFilter implements Filter {
 
         String path = httpRequest.getRequestURI();
 
-        // Only apply authentication to /api/v1/** paths
-        if (!path.startsWith("/api/v1/")) {
+        // Bypass authentication for public webhook endpoint
+        if ("/api/webhooks/clerk".equals(path)) {
             chain.doFilter(request, response);
             return;
         }
 
+        // Try API key authentication first
+        String apiKeyHeader = httpRequest.getHeader("x-api-key");
+        if (apiKeyHeader != null && !apiKeyHeader.isEmpty() && apiKey != null && !apiKey.isEmpty() && apiKey.equals(apiKeyHeader)) {
+            // API key is valid, allow request
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // Fallback to Clerk Bearer authentication
         try {
-            // Extract token from Authorization header
             String authHeader = httpRequest.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                sendUnauthorizedError(httpResponse, "Missing or invalid Authorization header");
+                sendUnauthorizedError(httpResponse, "Missing or invalid Authorization or x-api-key header");
                 return;
             }
 

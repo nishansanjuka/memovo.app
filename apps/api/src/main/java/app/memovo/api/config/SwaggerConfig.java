@@ -39,13 +39,21 @@ public class SwaggerConfig {
                         new io.swagger.v3.oas.models.servers.Server().url("http://localhost:8080").description("Local Development"),
                         new io.swagger.v3.oas.models.servers.Server().url("https://api.memovo.app").description("Production")
                 ))
-                .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
+                // Allow either Bearer or x-api-key for all endpoints
+                .addSecurityItem(new SecurityRequirement().addList("BearerAuth").addList("XApiKeyAuth"))
                 .components(new Components()
                         .addSecuritySchemes("BearerAuth",
                                 new SecurityScheme()
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
-                                        .description("Clerk JWT token. All /api/v1/** endpoints require authentication.")));
+                                        .description("Clerk JWT token. All /api/v1/** endpoints require authentication."))
+                        .addSecuritySchemes("XApiKeyAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.APIKEY)
+                                        .in(SecurityScheme.In.HEADER)
+                                        .name("x-api-key")
+                                        .description("API Key header. All /api/v1/** endpoints accept either Clerk JWT or x-api-key."))
+                );
     }
 }

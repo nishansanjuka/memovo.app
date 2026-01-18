@@ -63,6 +63,30 @@ const config: ZudokuConfig = {
       path: "/api",
     },
   ],
+  plugins: [
+    {
+      getIdentities: async () => {
+        return [
+          {
+            id: "bearer-token",
+            label: "Bearer Token",
+            authorizationFields: {
+              headers: ["Authorization"],
+            },
+            authorizeRequest: async (request) => request,
+          },
+          {
+            id: "api-key",
+            label: "API Key",
+            authorizationFields: {
+              headers: ["x-api-key"],
+            },
+            authorizeRequest: async (request) => request,
+          },
+        ];
+      },
+    },
+  ],
 };
 
 export default config;
