@@ -23,7 +23,7 @@ export class ClerkWebhookService {
         email:
           userData.email_addresses.length > 0
             ? userData.email_addresses[0].email_address
-            : '',
+            : `${userData.id}@memovo.app`,
       } as UserRequest,
     );
 
