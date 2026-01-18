@@ -8,7 +8,7 @@ import { BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class ClerkWebhookService {
-  constructor() { }
+  constructor() {}
 
   async handleUserCreated(event: UserWebhookEvent) {
     const userData = event.data as UserJSON;
@@ -39,7 +39,41 @@ export class ClerkWebhookService {
         userData.id,
       );
       const err = (await res.json()) as { message: string; errors: Array<any> };
-      logDebug(err.errors);
+      logDebug(err);
+      throw new BadRequestException(JSON.stringify(err.errors));
+    }
+  }
+
+  async handleUserUpdated(event: UserWebhookEvent) {
+    const userData = event.data as UserJSON;
+    const res = await forwardReq(
+      WEBHOOKS_ROUTES.UserUpdated.replace('{id}', userData.id),
+      'PUT',
+      baseConfig().apiKey,
+      {
+        id: userData.id,
+        firstName: userData.first_name,
+        lastName: userData.last_name,
+        email:
+          userData.email_addresses.length > 0
+            ? userData.email_addresses[0].email_address
+            : undefined,
+      } as UserRequest,
+    );
+
+    if (res.ok) {
+      logDebug(
+        'Successfully handled user.updated webhook for user ID:',
+        userData.id,
+      );
+      return { success: true };
+    } else {
+      logDebug(
+        'Failed to handle user.updated webhook for user ID:',
+        userData.id,
+      );
+      const err = (await res.json()) as { message: string; errors: Array<any> };
+      logDebug(err);
       throw new BadRequestException(JSON.stringify(err.errors));
     }
   }
