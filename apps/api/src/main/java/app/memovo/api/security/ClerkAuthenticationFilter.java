@@ -29,6 +29,9 @@ public class ClerkAuthenticationFilter implements Filter {
     @Value("${clerk.secret.key:}")
     private String clerkSecretKey;
 
+    @Value("${api.key:}")
+    private String apiKey;
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         if (clerkSecretKey == null || clerkSecretKey.isEmpty()) {
@@ -42,22 +45,27 @@ public class ClerkAuthenticationFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+        String path = httpRequest.getRequestURI();
 
-        //  whole authentications will be handled by Gateway now. so we skip path check here.
+        // Bypass authentication for public webhook endpoint
+        if ("/api/webhooks/clerk".equals(path)) {
+            chain.doFilter(request, response);
+            return;
+        }
 
-        // String path = httpRequest.getRequestURI();
+        // Try API key authentication first
+        String apiKeyHeader = httpRequest.getHeader("x-api-key");
+        if (apiKeyHeader != null && !apiKeyHeader.isEmpty() && apiKey != null && !apiKey.isEmpty() && apiKey.equals(apiKeyHeader)) {
+            // API key is valid, allow request
+            chain.doFilter(request, response);
+            return;
+        }
 
-        // Only apply authentication to /api/v1/** paths
-        // if (!path.startsWith("/api/v1/")) {
-        //     chain.doFilter(request, response);
-        //     return;
-        // }
-
+        // Fallback to Clerk Bearer authentication
         try {
-            // Extract token from Authorization header
             String authHeader = httpRequest.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                sendUnauthorizedError(httpResponse, "Missing or invalid Authorization header");
+                sendUnauthorizedError(httpResponse, "Missing or invalid Authorization or x-api-key header");
                 return;
             }
 

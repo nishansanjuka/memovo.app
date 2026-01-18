@@ -11,12 +11,19 @@ export class ClerkWebhookService {
   async handleUserCreated(event: UserWebhookEvent) {
     const userData = event.data as UserJSON;
 
+    console.log(userData);
+
     const res = await forwardReq(WEBHOOKS_ROUTES.UserCreated, 'POST', {
       id: userData.id,
       firstName: userData.first_name,
       lastName: userData.last_name,
-      email: userData.email_addresses[0].email_address,
+      email:
+        userData.email_addresses.length > 0
+          ? userData.email_addresses[0].email_address
+          : 'abc@gmail.com',
     } as UserRequest);
+
+    console.log(res);
 
     return res;
   }

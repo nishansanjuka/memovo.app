@@ -802,5 +802,5 @@ components:
             read:pets: read your pets
     api_key:
       type: apiKey
-      name: api_key
+      name: x-api-key
       in: header

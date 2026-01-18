@@ -1,16 +1,21 @@
 // Pre-request Script
+
 const clerkSecretKey = pm.environment.get('CLERK_SECRET_KEY');
 const userId = pm.environment.get('TEST_CLERK_USER_ID');
+const apiKey = pm.environment.get('API_KEY');
 
-if (!clerkSecretKey || !userId) {
-  console.log('CLERK_SECRET_KEY or TEST_CLERK_USER_ID is missing!');
+if ((!clerkSecretKey || !userId) && !apiKey) {
+  console.log('CLERK_SECRET_KEY/TEST_CLERK_USER_ID or API_KEY is missing!');
   return;
 }
 
-const clerkHeaders = {
-  Authorization: `Bearer ${clerkSecretKey}`,
-  'Content-Type': 'application/json',
-};
+// Prefer Bearer if present, else use x-api-key
+let authHeaders = { 'Content-Type': 'application/json' };
+if (clerkSecretKey && userId) {
+  authHeaders['Authorization'] = `Bearer ${clerkSecretKey}`;
+} else if (apiKey) {
+  authHeaders['x-api-key'] = apiKey;
+}
 
 // Helper: safe JSON parse
 function tryParseJSON(response) {
@@ -22,42 +27,48 @@ function tryParseJSON(response) {
   }
 }
 
-// Step 1: Create session
-pm.sendRequest(
-  {
-    url: `https://api.clerk.com/v1/sessions`,
-    method: 'POST',
-    header: clerkHeaders,
-    body: {
-      mode: 'raw',
-      raw: JSON.stringify({ user_id: userId }),
+// Step 1: Create session (if using Clerk)
+if (clerkSecretKey && userId) {
+  pm.sendRequest(
+    {
+      url: `https://api.clerk.com/v1/sessions`,
+      method: 'POST',
+      header: authHeaders,
+      body: {
+        mode: 'raw',
+        raw: JSON.stringify({ user_id: userId }),
+      },
     },
-  },
-  (err, response) => {
-    if (err) {
-      console.log('Error creating session:', err);
-      return;
-    }
+    (err, response) => {
+      if (err) {
+        console.log('Error creating session:', err);
+        return;
+      }
 
-    const session = tryParseJSON(response);
-    if (!session || !session.id) {
-      console.log('Failed to create session.');
-      return;
-    }
+      const session = tryParseJSON(response);
+      if (!session || !session.id) {
+        console.log('Failed to create session.');
+        return;
+      }
 
-    const sessionId = session.id;
-    console.log('Session ID:', sessionId);
+      const sessionId = session.id;
+      console.log('Session ID:', sessionId);
 
-    // Check if session already has an active organization
-    if (session.organization) {
-      console.log('Organization already active in session');
-      getToken(sessionId);
-      return;
-    }
+      // Check if session already has an active organization
+      if (session.organization) {
+        console.log('Organization already active in session');
+        getToken(sessionId);
+        return;
+      }
 
-    // Step 2: Get organizations for this user
-    pm.sendRequest(
-      {
+      // Step 2: Get organizations for this user
+      pm.sendRequest(
+        {
+// ...existing code...
+// If using API key only, set bearerToken to empty and skip Clerk session/token logic
+} else if (apiKey) {
+  pm.environment.set('bearerToken', '');
+}
         url: `https://api.clerk.com/v1/users/${userId}/organizations`,
         method: 'GET',
         header: clerkHeaders,
