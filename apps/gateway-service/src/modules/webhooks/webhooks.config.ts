@@ -15,4 +15,5 @@ export const BASE_API_URL = baseConfig().url;
 export const WEBHOOKS_ROUTES = {
   UserCreated: `${BASE_API_URL}${API_PATHS.api_v1_users}`,
   UserUpdated: `${BASE_API_URL}${API_PATHS.api_v1_users_id}`,
+  UserDeleted: `${BASE_API_URL}${API_PATHS.api_v1_users_id}`,
 };
