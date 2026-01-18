@@ -1,4 +1,4 @@
-import { UserJSON, UserWebhookEvent } from '@clerk/express';
+import { UserDeletedJSON, UserJSON, UserWebhookEvent } from '@clerk/express';
 import { forwardReq, logDebug } from '@memovo.app/utils';
 import { Injectable } from '@nestjs/common';
 import { WEBHOOKS_ROUTES } from '../webhooks.config';
@@ -70,6 +70,37 @@ export class ClerkWebhookService {
     } else {
       logDebug(
         'Failed to handle user.updated webhook for user ID:',
+        userData.id,
+      );
+      const err = (await res.json()) as { message: string; errors: Array<any> };
+      logDebug(err);
+      throw new BadRequestException(JSON.stringify(err.errors));
+    }
+  }
+
+  async handleUserDeleted(event: UserWebhookEvent) {
+    const userData = event.data as UserDeletedJSON;
+
+    if (!userData.id) {
+      logDebug('User ID is missing in user.deleted webhook event');
+      throw new BadRequestException('User ID is missing in webhook event');
+    }
+
+    const res = await forwardReq(
+      WEBHOOKS_ROUTES.UserDeleted.replace('{id}', userData.id),
+      'DELETE',
+      baseConfig().apiKey,
+    );
+
+    if (res.ok) {
+      logDebug(
+        'Successfully handled user.deleted webhook for user ID:',
+        userData.id,
+      );
+      return { success: true };
+    } else {
+      logDebug(
+        'Failed to handle user.deleted webhook for user ID:',
         userData.id,
       );
       const err = (await res.json()) as { message: string; errors: Array<any> };
