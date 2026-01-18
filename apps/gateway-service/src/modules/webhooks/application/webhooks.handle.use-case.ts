@@ -20,7 +20,7 @@ export class ClerkWebhookUseCase {
         break;
       case 'user.deleted':
         // as business owner, I want to update the corresponding business in my system when a user is deleted in Clerk
-        // await this.webhookService.handleOrganizationUpdated(event);
+        await this.webhookService.handleUserDeleted(event);
         break;
       default:
         logDebug('Unhandled webhook event type:', event.type);
