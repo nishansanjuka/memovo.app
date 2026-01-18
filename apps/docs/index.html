@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memovo Documentation Portal</title>
+    <meta
+      name="description"
+      content="Memovo Documentation Portal - Interactive docs and API references for the Memovo platform, microservices, and AI capabilities."
+    />
+    <meta
+      name="keywords"
+      content="Memovo, Documentation, API, OpenAPI, Microservices, AI, Platform, Docs, Scalar"
+    />
+    <meta name="author" content="Memovo Team" />
+    <meta property="og:title" content="Memovo Documentation Portal" />
+    <meta
+      property="og:description"
+      content="Explore Memovo's platform architecture, microservices, and live API references."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6"
+    />
+    <meta property="og:url" content="https://memovo.docs/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Memovo Documentation Portal" />
+    <meta
+      name="twitter:description"
+      content="Explore Memovo's platform architecture, microservices, and live API references."
+    />
+    <meta
+      name="twitter:image"
+      content="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@scalar/api-reference/dist/style.css"
+    />
+    <style>
+      body {
+        font-family: "Raleway", sans-serif;
+        background-color: #09090b;
+        color: #fafafa;
+      }
+
+      pre,
+      code {
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      #scalar-root {
+        --scalar-font-family: "Raleway", system-ui, sans-serif;
+      }
+
+      #scalar-root,
+      #scalar-root * {
+        font-family: "Raleway", system-ui, sans-serif !important;
+        /* letter-spacing: 0.01em !important; */
+        /* adjust as needed */
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #09090b;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #3f3f46;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "@scalar/api-reference": "https://esm.sh/@scalar/api-reference@1.43.8",
+          "lucide-react": "https://esm.sh/lucide-react@0.462.0",
+          "react-markdown": "https://esm.sh/react-markdown@9.0.1",
+          "react-dom": "https://esm.sh/react-dom@19.0.0",
+          "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+          "react": "https://esm.sh/react@19.0.0",
+          "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
+          "remark-gfm": "https://esm.sh/remark-gfm@4.0.0",
+          "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+          "react/": "https://esm.sh/react@^19.2.3/"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+
+  <body class="antialiased">
+    <div id="root"></div>
+    <script type="module" src="index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
