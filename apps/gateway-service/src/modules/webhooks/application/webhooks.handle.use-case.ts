@@ -5,7 +5,7 @@ import { ClerkWebhookService } from '../infrastructure/webhook.service';
 
 @Injectable()
 export class ClerkWebhookUseCase {
-  constructor(private readonly webhookService: ClerkWebhookService) {}
+  constructor(private readonly webhookService: ClerkWebhookService) { }
 
   async handleWebhook(event: WebhookEvent) {
     logDebug('Received webhook event:', event.type);
@@ -13,8 +13,7 @@ export class ClerkWebhookUseCase {
     switch (event.type) {
       case 'user.created':
         // as business owner, I want to create a corresponding user in my system when a new user is created in Clerk
-        await this.webhookService.handleUserCreated(event);
-        break;
+        return await this.webhookService.handleUserCreated(event);
       case 'organization.created':
         // as business owner, I want to create a corresponding business in my system when a new organization is created in Clerk
         // await this.webhookService.handleOrganizationCreated(event);

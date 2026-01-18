@@ -6,6 +6,7 @@ import { logDebug } from "./logdebug.js";
 export async function forwardReq(
   url: string,
   method: string,
+  apiKey: string,
   body?: any,
 ): Promise<Response> {
   logDebug(
@@ -15,6 +16,7 @@ export async function forwardReq(
     method,
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": apiKey,
     },
     body: body ? JSON.stringify(body) : undefined,
   });

@@ -8,7 +8,7 @@ import { type WebhookEvent } from '@clerk/express';
 @ApiExcludeController()
 @Controller('api/webhooks')
 export class ClerkWebhookController {
-  constructor(private readonly webhookUseCase: ClerkWebhookUseCase) {}
+  constructor(private readonly webhookUseCase: ClerkWebhookUseCase) { }
 
   @Post('clerk')
   @CatchEntityErrors()
