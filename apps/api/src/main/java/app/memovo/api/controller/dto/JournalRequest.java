@@ -10,6 +10,6 @@ public record JournalRequest(
     @Schema(description = "The main content of the journal entry", example = "Today was a great day...")
     @NotBlank String content,
 
-    @Schema(description = "ID of the user who owns this journal", example = "123")
+    @Schema(description = "ID of the user who owns this journal", example = "e4567-e89b-12d3-a456-426614174000")
     @NotBlank String userId
 ) {}
