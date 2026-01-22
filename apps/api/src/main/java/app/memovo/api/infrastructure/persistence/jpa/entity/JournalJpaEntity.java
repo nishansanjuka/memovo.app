@@ -14,8 +14,9 @@ public class JournalJpaEntity {
     @Column(name = "entry_id") 
     private String id;
 
-    @Column(name = "user_id", nullable = false) 
-    private String userId;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "user_id", nullable = false)
+    private UserJpaEntity user;
 
     @Column(nullable = false)
     private String title;
@@ -32,8 +33,8 @@ public class JournalJpaEntity {
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public UserJpaEntity getUser() { return user; }
+    public void setUser(UserJpaEntity user) { this.user = user; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

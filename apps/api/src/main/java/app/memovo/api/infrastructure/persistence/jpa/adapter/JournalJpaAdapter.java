@@ -12,16 +12,23 @@ import java.util.Optional;
 public class JournalJpaAdapter implements JournalRepository {
 
     private final SpringDataJournalRepository springRepository;
+    private final app.memovo.api.infrastructure.persistence.jpa.repository.SpringDataUserRepository userRepository;
     private final JournalPersistenceMapper mapper;
 
-    public JournalJpaAdapter(SpringDataJournalRepository springRepository, JournalPersistenceMapper mapper) {
+    public JournalJpaAdapter(SpringDataJournalRepository springRepository, 
+                             app.memovo.api.infrastructure.persistence.jpa.repository.SpringDataUserRepository userRepository,
+                             JournalPersistenceMapper mapper) {
         this.springRepository = springRepository;
+        this.userRepository = userRepository;
         this.mapper = mapper;
     }
 
     @Override
     public Journal save(Journal journal) {
         JournalJpaEntity entity = mapper.toEntity(journal);
+        if (journal.getUserId() != null) {
+            entity.setUser(userRepository.getReferenceById(journal.getUserId()));
+        }
         JournalJpaEntity savedEntity = springRepository.save(entity);
         return mapper.toDomain(savedEntity);
     }
