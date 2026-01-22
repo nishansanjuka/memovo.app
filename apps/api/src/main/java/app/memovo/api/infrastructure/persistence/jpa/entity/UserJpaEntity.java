@@ -28,6 +28,9 @@ public class UserJpaEntity {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @jakarta.persistence.OneToMany(mappedBy = "user", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<JournalJpaEntity> journals = new java.util.ArrayList<>();
+
     public UserJpaEntity() {}
 
     // Getters and Setters
@@ -48,4 +51,17 @@ public class UserJpaEntity {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public java.util.List<JournalJpaEntity> getJournals() { return journals; }
+    public void setJournals(java.util.List<JournalJpaEntity> journals) { this.journals = journals; }
+    
+    public void addJournal(JournalJpaEntity journal) {
+        journals.add(journal);
+        journal.setUser(this);
+    }
+
+    public void removeJournal(JournalJpaEntity journal) {
+        journals.remove(journal);
+        journal.setUser(null);
+    }
 }

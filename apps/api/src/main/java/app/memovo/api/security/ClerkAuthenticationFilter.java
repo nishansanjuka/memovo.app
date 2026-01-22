@@ -20,8 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Filter to authenticate requests using Clerk JWT tokens Applies to all
- * requests under /api/v1/**
+ * Filter to authenticate requests using Clerk JWT tokens
+ * Applies to all requests under /api/v1/**
  */
 @Component
 public class ClerkAuthenticationFilter implements Filter {
@@ -35,81 +35,125 @@ public class ClerkAuthenticationFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         if (clerkSecretKey == null || clerkSecretKey.isEmpty()) {
-            throw new ServletException("Clerk secret key is not configured. Please set clerk.secret.key in application.properties");
+            throw new ServletException(
+                "Clerk secret key is not configured. Please set clerk.secret.key"
+            );
         }
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    public void doFilter(
+            ServletRequest request,
+            ServletResponse response,
+            FilterChain chain)
             throws IOException, ServletException {
+
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         String path = httpRequest.getRequestURI();
 
-        // Bypass authentication for public webhook endpoint
+        // Public endpoint
         if ("/api/webhooks/clerk".equals(path)) {
-            chain.doFilter(request, response);
+            executeSafely(chain, request, response);
             return;
         }
 
-        // Try API key authentication first
+        // API key auth
         String apiKeyHeader = httpRequest.getHeader("x-api-key");
-        if (apiKeyHeader != null && !apiKeyHeader.isEmpty() && apiKey != null && !apiKey.isEmpty() && apiKey.equals(apiKeyHeader)) {
-            // API key is valid, allow request
-            chain.doFilter(request, response);
+        if (apiKeyHeader != null
+                && !apiKeyHeader.isEmpty()
+                && apiKey != null
+                && apiKey.equals(apiKeyHeader)) {
+
+            executeSafely(chain, request, response);
             return;
         }
 
-        // Fallback to Clerk Bearer authentication
+        // Clerk auth
+        String authHeader = httpRequest.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            sendUnauthorizedError(httpResponse, "Missing Authorization header");
+            return;
+        }
+
+        String token = authHeader.substring(7);
+
         try {
-            String authHeader = httpRequest.getHeader("Authorization");
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                sendUnauthorizedError(httpResponse, "Missing or invalid Authorization or x-api-key header");
-                return;
-            }
+            VerifyTokenOptions options =
+                    VerifyTokenOptions.Builder
+                            .withSecretKey(clerkSecretKey)
+                            .build();
 
-            String token = authHeader.substring(7); // Remove "Bearer " prefix
+            var verifyResponse = VerifyToken.verifyToken(token, options);
 
-            // Verify token with Clerk using the new security helper
-            VerifyTokenOptions options = VerifyTokenOptions.Builder.withSecretKey(clerkSecretKey)
-                    .build();
-
-            com.clerk.backend_api.helpers.security.models.TokenVerificationResponse<?> verifyResponse = VerifyToken.verifyToken(token, options);
-
-            // The payload is actually a JWT Claims object
             Object payload = verifyResponse.payload();
 
-            if (payload == null) {
-                throw new ServletException("Token verification returned null payload");
-            }
-
             if (!(payload instanceof io.jsonwebtoken.Claims)) {
-                throw new ServletException("Unexpected payload type: " + payload.getClass().getName());
+                throw new ServletException("Invalid token payload");
             }
 
-            io.jsonwebtoken.Claims claims = (io.jsonwebtoken.Claims) payload;
+            httpRequest.setAttribute("clerk.claims", payload);
 
-            // Store claims in request attributes for later retrieval
-            httpRequest.setAttribute("clerk.claims", claims);
+        } catch (ClerkErrors |
+                 TokenVerificationException |
+                 InterruptedException e) {
 
+            sendUnauthorizedError(httpResponse, "Invalid or expired token");
+            return;
+        }
+
+        // Execute request safely and return real exception messages without stack trace
+        executeSafely(chain, request, response);
+    }
+
+    /**
+     * Executes filter chain and returns exception message without stack trace
+     */
+    private void executeSafely(
+            FilterChain chain,
+            ServletRequest request,
+            ServletResponse response)
+            throws IOException {
+
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        try {
             chain.doFilter(request, response);
+        } catch (Exception ex) {
 
-        } catch (ClerkErrors e) {
-            sendUnauthorizedError(httpResponse, "Token verification failed: " + e.getMessage());
-        } catch (TokenVerificationException | ServletException | IOException | InterruptedException e) {
-            sendUnauthorizedError(httpResponse, "Authentication error: " + e.getMessage());
+            if (!httpResponse.isCommitted()) {
+                httpResponse.resetBuffer();
+            }
+
+            httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            httpResponse.setContentType("application/json");
+
+            String message = ex.getMessage() != null ? ex.getMessage() : "Internal server error";
+
+            httpResponse.getWriter().write(
+                String.format(
+                    "{\"status\":500,\"error\":\"Internal Server Error\",\"message\":\"%s\"}",
+                    message.replace("\"", "\\\"") // escape quotes
+                )
+            );
         }
     }
 
-    private void sendUnauthorizedError(HttpServletResponse response, String message) throws IOException {
+    private void sendUnauthorizedError(HttpServletResponse response, String message)
+            throws IOException {
+
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        response.getWriter().write(String.format("{\"error\": \"Unauthorized\", \"message\": \"%s\"}", message));
+        response.getWriter().write(
+            String.format(
+                "{\"error\":\"Unauthorized\",\"message\":\"%s\"}",
+                message.replace("\"", "\\\"")
+            )
+        );
     }
 
     @Override
     public void destroy() {
-        // Cleanup if needed
     }
 }
