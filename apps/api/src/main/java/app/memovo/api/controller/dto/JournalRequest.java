@@ -8,5 +8,8 @@ public record JournalRequest(
     @NotBlank String title,
 
     @Schema(description = "The main content of the journal entry", example = "Today was a great day...")
-    @NotBlank String content
+    @NotBlank String content,
+
+    @Schema(description = "ID of the user who owns this journal", example = "123")
+    @NotBlank String userId
 ) {}

@@ -21,8 +21,7 @@ public class JournalServiceImpl implements JournalService {
     }
 
     @Override
-    public Journal createJournal(String userId, Journal journal) {
-        journal.setUserId(userId);
+    public Journal createJournal( Journal journal) {
         
         
         if (journal.getId() == null) {
