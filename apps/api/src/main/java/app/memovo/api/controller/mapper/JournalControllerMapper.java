@@ -1,9 +1,10 @@
 package app.memovo.api.controller.mapper;
 
+import org.springframework.stereotype.Component;
+
 import app.memovo.api.controller.dto.JournalRequest;
 import app.memovo.api.controller.dto.JournalResponse;
 import app.memovo.api.domain.model.Journal;
-import org.springframework.stereotype.Component;
 
 @Component
 public class JournalControllerMapper {
@@ -14,6 +15,7 @@ public class JournalControllerMapper {
         Journal journal = new Journal();
         journal.setTitle(request.title());
         journal.setContent(request.content());
+        journal.setUserId(request.userId());
         return journal;
     }
 
