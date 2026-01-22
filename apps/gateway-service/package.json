@@ -21,8 +21,7 @@
   },
   "dependencies": {
     "@clerk/express": "^1.7.63",
-    "@memovo.app/types": "workspace:^",
-    "@memovo.app/utils": "workspace:^",
+    
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -56,7 +55,9 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.20.0",
+    "@memovo.app/types": "workspace:^",
+    "@memovo.app/utils": "workspace:^"
   },
   "jest": {
     "moduleFileExtensions": [
