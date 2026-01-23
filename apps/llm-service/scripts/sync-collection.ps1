@@ -1,5 +1,5 @@
-$env:API_JSON_URL = $env:API_JSON_URL
-if (-not $env:API_JSON_URL) { $env:API_JSON_URL = "http://localhost:8000/api-json" }
+$env:POSTMAN_LLM_API_JSON_URL = $env:POSTMAN_LLM_API_JSON_URL
+if (-not $env:POSTMAN_LLM_API_JSON_URL) { $env:POSTMAN_LLM_API_JSON_URL = "http://localhost:7000/api-json" }
 $env:TEMP = $env:TEMP
 $env:POSTMAN_API_KEY = $env:POSTMAN_API_KEY
 $env:POSTMAN_LLM_COLLECTION_ID = $env:POSTMAN_LLM_COLLECTION_ID
@@ -9,8 +9,8 @@ if (-not $env:POSTMAN_API_KEY -or -not $env:POSTMAN_LLM_COLLECTION_ID) {
     exit 1
 }
 
-Write-Host "Downloading OpenAPI spec from $env:API_JSON_URL..."
-Invoke-WebRequest $env:API_JSON_URL -OutFile "$env:TEMP\openapi_llm.json"
+Write-Host "Downloading OpenAPI spec from $env:POSTMAN_LLM_API_JSON_URL..."
+Invoke-WebRequest $env:POSTMAN_LLM_API_JSON_URL -OutFile "$env:TEMP\openapi_llm.json"
 
 Write-Host "Converting to Postman collection..."
 npx openapi-to-postmanv2 -s "$env:TEMP\openapi_llm.json" -o "$env:TEMP\collection_llm.json" -p -O folderStrategy=Tags
