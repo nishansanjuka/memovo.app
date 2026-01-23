@@ -16,10 +16,14 @@ const ApiRefPage: React.FC = () => {
   }
 
   return (
-    <ScalarDocs
-      key={activeDoc.id}
-      specUrl={activeDoc.specUrl || ""}
-    />
+    <div className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 overflow-y-auto rounded-md">
+        <ScalarDocs
+          key={activeDoc.id}
+          specUrl={activeDoc.specUrl || ""}
+        />
+      </main>
+    </div>
   );
 };
 
