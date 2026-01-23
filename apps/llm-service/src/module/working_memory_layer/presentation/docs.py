@@ -4,7 +4,7 @@ from typing import Dict, Any
 class WorkingMemoryDocs:
     CREATE_MEMORY: Dict[str, Any] = {
         "summary": "Create a new working memory",
-        "description": "Store a chat memory record with a unique identifier.",
+        "description": "Store a chat memory record with a unique identifier and user ID. Chat content can be any JSON-serializable object.",
         "responses": {
             201: {"description": "Memory created successfully"},
             400: {"description": "Validation error or failed to create memory"},

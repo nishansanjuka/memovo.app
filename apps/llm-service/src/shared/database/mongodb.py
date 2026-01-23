@@ -13,7 +13,7 @@ class MongoDBAdapter:
 
     async def connect(self):
         # Initialize the MongoDB connection.
-        if not self.client:
+        if self.client is None:
             try:
                 self.client = AsyncIOMotorClient(settings.MONGODB_URI)
                 self.db = self.client[settings.MONGODB_DB_NAME]
@@ -26,7 +26,7 @@ class MongoDBAdapter:
 
     async def close(self):
         # Close the MongoDB connection.
-        if self.client:
+        if self.client is not None:
             self.client.close()
             self.client = None
             self.db = None
@@ -34,7 +34,7 @@ class MongoDBAdapter:
 
     def get_db(self):
         # Return the database instance.
-        if not self.db:
+        if self.db is None:
             raise RuntimeError("MongoDB not connected. Call connect() first.")
         return self.db
 

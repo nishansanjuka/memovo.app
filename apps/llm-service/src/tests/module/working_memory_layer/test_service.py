@@ -19,12 +19,15 @@ def mock_repo():
 @pytest.mark.asyncio
 async def test_create_memory_success(mock_repo):
     service = WorkingMemoryService()
-    payload = WorkingMemoryCreate(id="mem_1", chat="test chat")
+    chat_data = {"text": "hello", "metadata": {"source": "web"}}
+    payload = WorkingMemoryCreate(id="mem_1", chat=chat_data, userid="user_123")
     mock_repo.create.return_value = "mem_1"
 
     result = await service.create_memory(payload)
     assert result == "mem_1"
-    mock_repo.create.assert_called_once_with({"id": "mem_1", "chat": "test chat"})
+    mock_repo.create.assert_called_once_with(
+        {"id": "mem_1", "chat": chat_data, "userid": "user_123"}
+    )
 
 
 @pytest.mark.asyncio
@@ -61,12 +64,13 @@ async def test_list_memories_by_ids(mock_repo):
     service = WorkingMemoryService()
     ids = ["id1", "id2"]
     mock_repo.find_by_ids.return_value = [
-        {"id": "id1", "chat": "chat 1"},
-        {"id": "id2", "chat": "chat 2"},
+        {"id": "id1", "chat": "chat 1", "userid": "u1"},
+        {"id": "id2", "chat": "chat 2", "userid": "u1"},
     ]
 
     results = await service.list_memories_by_ids(ids)
     assert len(results) == 2
     assert results[0].id == "id1"
+    assert results[0].userid == "u1"
     assert results[1].id == "id2"
     mock_repo.find_by_ids.assert_called_once_with(ids)

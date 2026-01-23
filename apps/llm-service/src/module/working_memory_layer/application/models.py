@@ -1,9 +1,13 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Any
 
 
 class WorkingMemoryBase(BaseModel):
-    chat: str = Field(..., description="The chat content associated with this memory.")
+    chat: Any = Field(
+        ...,
+        description="The chat content associated with this memory. Can be string, object, array, etc.",
+    )
+    userid: str = Field(..., description="The ID of the user who owns this memory.")
 
 
 class WorkingMemoryCreate(WorkingMemoryBase):
@@ -11,7 +15,8 @@ class WorkingMemoryCreate(WorkingMemoryBase):
 
 
 class WorkingMemoryUpdate(BaseModel):
-    chat: Optional[str] = None
+    chat: Optional[Any] = None
+    userid: Optional[str] = None
 
 
 class WorkingMemoryResponse(WorkingMemoryBase):
