@@ -4,10 +4,5 @@ export type DocPage = {
   type: "markdown" | "api";
   content?: string; // For Markdown
   specUrl?: string; // For Scalar
-  group: "General" | "Api references" | "Gateway";
+  group: "General" | "Microservices" | "Gateway";
 };
-
-export interface NavigationProps {
-  currentPath: string;
-  onNavigate: (path: string) => void;
-}
