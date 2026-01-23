@@ -5,6 +5,9 @@ from src.shared import settings, mongodb_adapter
 from src.module.working_memory_layer.presentation.controller import (
     router as working_memory_router,
 )
+from src.module.episodic_memory_layer.presentation.controller import (
+    router as episodic_memory_router,
+)
 
 
 @asynccontextmanager
@@ -34,6 +37,7 @@ app.add_middleware(
 )
 
 app.include_router(working_memory_router)
+app.include_router(episodic_memory_router)
 
 
 @app.get("/healthcheck")
