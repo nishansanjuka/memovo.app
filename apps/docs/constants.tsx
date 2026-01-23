@@ -166,28 +166,27 @@ Cross-platform mobile client.
   // API REFERENCES — SCALAR
   // ============================================================
   {
-    id: "memovo-api",
+    id: "api-main",
     title: "Memovo API",
     type: "api",
-    group: "Api references",
+    group: "Microservices",
     specUrl:
       import.meta.env.VITE_MEMOVO_API_URL ?? "http://localhost:8080/api-docs",
   },
 
   {
-    id: "LLM-service-api",
+    id: "llm-service",
     title: "LLM Service API",
     type: "api",
-    group: "Api references",
-    specUrl:
-      "https://raw.githubusercontent.com/scalar/scalar/main/packages/api-reference/src/fixtures/openapi.json",
+    group: "Microservices",
+    specUrl: import.meta.env.VITE_LLM_SERVICE_URL ?? "http://localhost:8000/api-json"
   },
 
   // ============================================================
   // GATEWAY SERVICE API
   // ============================================================
   {
-    id: "gateway-service-api",
+    id: "gateway-service",
     title: "Gateway Service API",
     type: "api",
     group: "Gateway",

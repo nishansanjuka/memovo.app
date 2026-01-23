@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { createApiReference } from "@scalar/api-reference";
+import "@scalar/api-reference/style.css";
 
 interface ScalarDocsProps {
   specUrl: string;
@@ -28,7 +29,7 @@ const ScalarDocs: React.FC<ScalarDocsProps> = ({ specUrl }) => {
   return (
     <div
       id="scalar-root"
-      className="w-full h-[calc(100vh-64px)] overflow-auto bg-zinc-950"
+      className="w-full h-screen overflow-auto"
     />
   );
 };
