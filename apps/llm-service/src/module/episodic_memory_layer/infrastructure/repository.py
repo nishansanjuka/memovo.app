@@ -41,5 +41,18 @@ class EpisodicMemoryRepository:
             results.append(doc)
         return results
 
+    async def find_by_user_and_date_range(
+        self, user_id: str, start_date: str
+    ) -> List[Dict[str, Any]]:
+        # Find memories for a user since start_date
+        cursor = self._get_collection().find(
+            {"userid": user_id, "snapshot.timestamp": {"$gte": start_date}}
+        )
+        results = []
+        async for doc in cursor:
+            doc["id"] = doc["_id"]
+            results.append(doc)
+        return results
+
 
 episodic_memory_repository = EpisodicMemoryRepository()
