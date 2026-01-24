@@ -15,6 +15,13 @@ def mock_chat_service():
 
     def mock_chat_stream(request):
         async def mock_iter():
+            # Initial working memory
+            yield (
+                json.dumps(
+                    {"type": "data", "key": "working_memory", "value": []}
+                ).encode("utf-8")
+                + b"\n"
+            )
             yield (
                 json.dumps(
                     {
@@ -27,6 +34,17 @@ def mock_chat_service():
             )
             yield (
                 json.dumps({"type": "chunk", "content": "Hello world"}).encode("utf-8")
+                + b"\n"
+            )
+            # Final working memory
+            yield (
+                json.dumps(
+                    {
+                        "type": "data",
+                        "key": "working_memory",
+                        "value": [{"role": "user", "content": "Hi"}],
+                    }
+                ).encode("utf-8")
                 + b"\n"
             )
             yield (
@@ -52,13 +70,15 @@ def test_chat_endpoint_success(mock_chat_service):
     lines = response.text.strip().split("\n")
     data = [json.loads(line) for line in lines]
 
-    assert data[0]["status"] == "retrieving_episodic"
-    assert data[1]["content"] == "Hello world"
-    assert data[2]["status"] == "completed"
+    assert data[0]["type"] == "data"
+    assert data[0]["key"] == "working_memory"
+    assert data[1]["status"] == "retrieving_episodic"
+    assert data[2]["content"] == "Hello world"
+    assert data[3]["type"] == "data"
+    assert data[4]["status"] == "completed"
 
 
 def test_chat_invalid_input():
-    # Remove any lingering overrides
     app.dependency_overrides.clear()
     payload = {"userId": "user123"}  # missing prompt
     response = client.post("/chat", json=payload)
