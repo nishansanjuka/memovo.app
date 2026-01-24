@@ -15,6 +15,9 @@ Invoke-WebRequest $env:POSTMAN_LLM_API_JSON_URL -OutFile "$env:TEMP\openapi_llm.
 Write-Host "Converting to Postman collection..."
 npx openapi-to-postmanv2 -s "$env:TEMP\openapi_llm.json" -o "$env:TEMP\collection_llm.json" -p -O folderStrategy=Tags
 
+Write-Host "Patching collection..."
+node ./scripts/patch-postman.mjs
+
 Write-Host "Uploading to Postman..."
 $collection = Get-Content "$env:TEMP\collection_llm.json" -Raw
 $body = @{ collection = (ConvertFrom-Json $collection) } | ConvertTo-Json -Depth 100

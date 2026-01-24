@@ -1,8 +1,9 @@
 {
   "id": "dev-env",
-  "name": "DEV",
+  "name": "Memovo ENV",
   "values": [
-    { "key": "baseUrl", "value": "http://localhost:8080", "enabled": true },
+    { "key": "apiBaseUrl", "value": "http://localhost:8080", "enabled": true },
+    { "key": "llmServiceBaseUrl", "value": "http://localhost:7000", "enabled": true },
     {
       "key": "CLERK_SECRET_KEY",
       "value": "{{YOUR_CLERK_SECRET_KEY}}",
