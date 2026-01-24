@@ -16,6 +16,15 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "sync:postman": {
+      "cache": false
+    },
+    "sync:postman:env": {
+      "cache": false
+    },
+    "sync:postman:all": {
+      "cache": false
     }
   }
 }

@@ -14,7 +14,8 @@ if (!fs.existsSync(envTemplatePath)) {
 // Read environment variables from process.env (loaded by dotenv-cli)
 const clerkSecretKey = process.env.CLERK_SECRET_KEY;
 const testUserId = process.env.TEST_CLERK_USER_ID;
-const baseUrl = process.env.BASE_URL || 'http://localhost:8080';
+const apiBaseUrl = process.env.BASE_URL || 'http://localhost:8080';
+const llmServiceBaseUrl = process.env.LLM_SERVICE_BASE_URL || 'http://localhost:7000';
 
 if (!clerkSecretKey) {
   console.error('❌ CLERK_SECRET_KEY not found in environment');
@@ -29,9 +30,10 @@ if (!testUserId) {
 // Create environment with actual values
 const environment = {
   id: 'memovo-dev-env',
-  name: 'Memovo DEV',
+  name: 'Memovo ENV',
   values: [
-    { key: 'baseUrl', value: baseUrl, enabled: true },
+    { key: 'apiBaseUrl', value: apiBaseUrl, enabled: true },
+    { key: 'llmServiceBaseUrl', value: llmServiceBaseUrl, enabled: true },
     { key: 'CLERK_SECRET_KEY', value: clerkSecretKey, enabled: true },
     { key: 'TEST_CLERK_USER_ID', value: testUserId, enabled: true },
     { key: 'bearerToken', value: '', enabled: true },
@@ -47,7 +49,8 @@ const outputPath = path.join(tempPath, 'postman-environment.json');
 fs.writeFileSync(outputPath, JSON.stringify(environment, null, 2));
 console.log('✅ Environment created at:', outputPath);
 console.log('📋 Values:', {
-  baseUrl,
+  apiBaseUrl,
+  llmServiceBaseUrl,
   CLERK_SECRET_KEY: clerkSecretKey.substring(0, 15) + '...',
   TEST_CLERK_USER_ID: testUserId,
 });

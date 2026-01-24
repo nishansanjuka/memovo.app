@@ -36,5 +36,10 @@ collection.event.push({
   },
 });
 
-fs.writeFileSync(collectionPath, JSON.stringify(collection, null, 2));
-console.log('✅ Postman collection patched with pre-request script!');
+// --- Replace baseUrl with apiBaseUrl in the entire collection ---
+let collectionStr = JSON.stringify(collection, null, 2);
+collectionStr = collectionStr.replace(/\{\{baseUrl\}\}/g, '{{apiBaseUrl}}');
+const updatedCollection = JSON.parse(collectionStr);
+
+fs.writeFileSync(collectionPath, JSON.stringify(updatedCollection, null, 2));
+console.log('✅ Postman collection patched with pre-request script and apiBaseUrl!');
