@@ -76,3 +76,18 @@ async def test_list_memories_by_ids(mock_repo):
     assert results[0].userid == "u2"
     assert results[1].id == "id2"
     mock_repo.find_by_ids.assert_called_once_with(ids)
+
+
+@pytest.mark.asyncio
+async def test_get_recent_memories(mock_repo):
+    service = EpisodicMemoryService()
+    user_id = "user_123"
+    start_date = "2026-01-17T00:00:00"
+    mock_repo.find_by_user_and_date_range.return_value = [
+        {"id": "id1", "snapshot": {"summary": "recent"}, "userid": user_id}
+    ]
+
+    results = await service.get_recent_memories(user_id, start_date)
+    assert len(results) == 1
+    assert results[0].userid == user_id
+    mock_repo.find_by_user_and_date_range.assert_called_once_with(user_id, start_date)

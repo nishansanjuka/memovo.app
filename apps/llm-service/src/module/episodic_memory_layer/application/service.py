@@ -30,5 +30,13 @@ class EpisodicMemoryService:
         data_list = await episodic_memory_repository.find_by_ids(memory_ids)
         return [EpisodicMemoryResponse(**data) for data in data_list]
 
+    async def get_recent_memories(
+        self, user_id: str, start_date: str
+    ) -> List[EpisodicMemoryResponse]:
+        data_list = await episodic_memory_repository.find_by_user_and_date_range(
+            user_id, start_date
+        )
+        return [EpisodicMemoryResponse(**data) for data in data_list]
+
 
 episodic_memory_service = EpisodicMemoryService()
