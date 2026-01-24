@@ -42,5 +42,15 @@ class WorkingMemoryRepository:
             results.append(doc)
         return results
 
+    async def find_by_user(self, user_id: str) -> List[Dict[str, Any]]:
+        # Find working memories for a user, sorted by id or timestamp if available
+        # Assuming ids are sequential or we just want the list for now
+        cursor = self._get_collection().find({"userid": user_id})
+        results = []
+        async for doc in cursor:
+            doc["id"] = doc["_id"]
+            results.append(doc)
+        return results
+
 
 working_memory_repository = WorkingMemoryRepository()
