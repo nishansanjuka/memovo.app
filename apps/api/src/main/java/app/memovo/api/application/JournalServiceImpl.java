@@ -3,6 +3,7 @@ package app.memovo.api.application;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
  
@@ -29,9 +30,24 @@ public class JournalServiceImpl implements JournalService {
         }
         journal.setCreatedAt(LocalDateTime.now());
         
-        
         return journalRepository.save(journal);
     }
+
+    @Override
+    public  Journal updateJournal(String userId, Journal journalUpdates) { 
+        Journal existingJournal = journalRepository.findById(journalUpdates.getId())
+            .orElseThrow(() -> new NoSuchElementException("Journal not found with id: " + journalUpdates.getId()));
+
+        if (!existingJournal.getUserId().equals(userId)) {
+            throw new SecurityException("User " + userId + " is not authorized to update this journal.");
+        }
+
+        existingJournal.setTitle(journalUpdates.getTitle());
+        existingJournal.setContent(journalUpdates.getContent());
+        
+        return journalRepository.save(existingJournal);
+    }
+    
 
     @Override
     public Optional<Journal> getJournalById(String id) {
