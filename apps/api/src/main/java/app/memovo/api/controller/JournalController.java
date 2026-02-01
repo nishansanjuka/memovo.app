@@ -2,7 +2,9 @@ package app.memovo.api.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import app.memovo.api.application.JournalService;
 import app.memovo.api.controller.dto.JournalRequest;
 import app.memovo.api.controller.dto.JournalResponse;
+import app.memovo.api.controller.dto.JournalUpdateRequest;
 import app.memovo.api.controller.mapper.JournalControllerMapper;
 import app.memovo.api.domain.model.Journal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,20 +34,29 @@ public class JournalController {
 
     @PostMapping
     @Operation(summary = "Create a new journal entry for a specific user")
-    public ResponseEntity<JournalResponse> createJournal(
-    
-            @Valid @RequestBody JournalRequest request) {
+    public ResponseEntity<JournalResponse> createJournal(@Valid @RequestBody JournalRequest request) {
 
-        
         Journal journalDomain = mapper.toDomain(request);
-
-
 
         Journal createdJournal = journalService.createJournal(journalDomain);
 
-        
         JournalResponse response = mapper.toResponse(createdJournal);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/{journalId}")
+    @Operation(summary = "Update an existing journal entry for a specific user")
+    public ResponseEntity<JournalResponse> updateJournal(
+            @RequestBody JournalUpdateRequest request,
+            @PathVariable String journalId) {
+
+        Journal journalDomain = mapper.toDomain(request);
+
+        Journal updatedJournal = journalService.updateJournal(journalId, journalDomain);
+
+        JournalResponse response = mapper.toResponse(updatedJournal);
+
+        return ResponseEntity.ok(response);
     }
 }
