@@ -7,4 +7,5 @@ import app.memovo.api.infrastructure.persistence.jpa.entity.JournalJpaEntity;
 
 @Repository
 public interface SpringDataJournalRepository extends JpaRepository<JournalJpaEntity, String> {
+    java.util.List<JournalJpaEntity> findByUserId(String userId);
 }

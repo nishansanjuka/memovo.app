@@ -7,6 +7,8 @@ import app.memovo.api.infrastructure.persistence.jpa.mapper.JournalPersistenceMa
 import app.memovo.api.infrastructure.persistence.jpa.repository.SpringDataJournalRepository;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JournalJpaAdapter implements JournalRepository {
@@ -46,5 +48,12 @@ public class JournalJpaAdapter implements JournalRepository {
     @Override
     public boolean existsById(String id) {
         return springRepository.existsById(id);
+    }
+
+    @Override
+    public List<Journal> findByUserId(String userId) {
+        return springRepository.findByUserId(userId).stream()
+            .map(mapper::toDomain)
+            .collect(Collectors.toList());
     }
 }

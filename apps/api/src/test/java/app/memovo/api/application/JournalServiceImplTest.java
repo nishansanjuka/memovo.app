@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -89,6 +90,19 @@ class JournalServiceImplTest {
         // Act & Assert
         assertThatThrownBy(() -> journalService.getJournalById("non_existent", "user_123"))
             .isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    void getJournalsByUserId_shouldReturnList() {
+        // Arrange
+        when(journalRepository.findByUserId("user_123")).thenReturn(List.of(existingJournal));
+
+        // Act
+        List<Journal> result = journalService.getJournalsByUserId("user_123");
+
+        // Assert
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUserId()).isEqualTo("user_123");
     }
 
     @Test

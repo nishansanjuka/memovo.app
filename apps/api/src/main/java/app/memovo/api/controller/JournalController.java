@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import app.memovo.api.application.JournalService;
 import app.memovo.api.controller.dto.JournalRequest;
 import app.memovo.api.controller.dto.JournalResponse;
@@ -46,6 +47,16 @@ public class JournalController {
         JournalResponse response = mapper.toResponse(createdJournal);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all journal entries for a user")
+    public ResponseEntity<List<JournalResponse>> getJournals(@RequestParam String userId) {
+        List<Journal> journals = journalService.getJournalsByUserId(userId);
+        List<JournalResponse> responses = journals.stream()
+            .map(mapper::toResponse)
+            .toList();
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{journalId}")

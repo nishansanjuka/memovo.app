@@ -1,7 +1,6 @@
 package app.memovo.api.application;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -66,7 +65,7 @@ public class JournalServiceImpl implements JournalService {
 
     @Override
     public List<Journal> getJournalsByUserId(String userId) {
-        return Collections.emptyList(); 
+        return journalRepository.findByUserId(userId);
     }
 
     @Override

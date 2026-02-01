@@ -1,5 +1,6 @@
 package app.memovo.api.domain.port;
 
+import java.util.List;
 import java.util.Optional;
 
 import app.memovo.api.domain.model.Journal;
@@ -15,4 +16,6 @@ public interface JournalRepository {
     void deleteById(String id);
 
     boolean existsById(String id);
+
+    List<Journal> findByUserId(String userId);
 }
