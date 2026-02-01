@@ -34,16 +34,19 @@ public class JournalServiceImpl implements JournalService {
     }
 
     @Override
-    public  Journal updateJournal(String userId, Journal journalUpdates) { 
-        Journal existingJournal = journalRepository.findById(journalUpdates.getId())
-            .orElseThrow(() -> new NoSuchElementException("Journal not found with id: " + journalUpdates.getId()));
+    public Journal updateJournal(String journalId, Journal journalUpdates) { 
+        Journal existingJournal = journalRepository.findById(journalId)
+            .orElseThrow(() -> new NoSuchElementException("Journal not found with id: " + journalId));
 
-        if (!existingJournal.getUserId().equals(userId)) {
-            throw new SecurityException("User " + userId + " is not authorized to update this journal.");
+        if (journalUpdates.getTitle() != null) {
+            existingJournal.setTitle(journalUpdates.getTitle());
         }
-
-        existingJournal.setTitle(journalUpdates.getTitle());
-        existingJournal.setContent(journalUpdates.getContent());
+        if (journalUpdates.getContent() != null) {
+            existingJournal.setContent(journalUpdates.getContent());
+        }
+        if (journalUpdates.getUserId() != null) {
+            existingJournal.setUserId(journalUpdates.getUserId());
+        }
         
         return journalRepository.save(existingJournal);
     }

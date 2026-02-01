@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import app.memovo.api.application.JournalService;
 import app.memovo.api.controller.dto.JournalRequest;
 import app.memovo.api.controller.dto.JournalResponse;
+import app.memovo.api.controller.dto.JournalUpdateRequest;
 import app.memovo.api.controller.mapper.JournalControllerMapper;
 import app.memovo.api.domain.model.Journal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +48,7 @@ public class JournalController {
     @PutMapping("/{journalId}")
     @Operation(summary = "Update an existing journal entry for a specific user")
     public ResponseEntity<JournalResponse> updateJournal(
-            @Valid @RequestBody JournalRequest request,
+            @RequestBody JournalUpdateRequest request,
             @PathVariable String journalId) {
 
         Journal journalDomain = mapper.toDomain(request);

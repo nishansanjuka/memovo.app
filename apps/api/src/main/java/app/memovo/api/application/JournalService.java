@@ -9,7 +9,7 @@ public interface JournalService {
     
     Journal createJournal( Journal journal); 
 
-    Journal updateJournal( String userId, Journal journalUpdates);
+    Journal updateJournal(String journalId, Journal journalUpdates);
     
     Optional<Journal> getJournalById(String id);
     
