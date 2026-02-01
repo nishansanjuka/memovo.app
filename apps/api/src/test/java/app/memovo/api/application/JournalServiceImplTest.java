@@ -3,6 +3,7 @@ package app.memovo.api.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.NoSuchElementException;
@@ -43,7 +44,6 @@ class JournalServiceImplTest {
         // Arrange
         Journal updates = new Journal();
         updates.setTitle("New Title");
-        // content and userId are null in updates
 
         when(journalRepository.findById("journal_123")).thenReturn(Optional.of(existingJournal));
         when(journalRepository.save(any(Journal.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -53,8 +53,8 @@ class JournalServiceImplTest {
 
         // Assert
         assertThat(result.getTitle()).isEqualTo("New Title");
-        assertThat(result.getContent()).isEqualTo("Old Content"); // Should remain unchanged
-        assertThat(result.getUserId()).isEqualTo("user_123"); // Should remain unchanged
+        assertThat(result.getContent()).isEqualTo("Old Content");
+        assertThat(result.getUserId()).isEqualTo("user_123");
     }
 
     @Test
@@ -84,6 +84,28 @@ class JournalServiceImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> journalService.updateJournal("non_existent", new Journal()))
+            .isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    void deleteJournal_shouldDelete_whenExists() {
+        // Arrange
+        when(journalRepository.existsById("journal_123")).thenReturn(true);
+
+        // Act
+        journalService.deleteJournal("journal_123");
+
+        // Assert
+        verify(journalRepository).deleteById("journal_123");
+    }
+
+    @Test
+    void deleteJournal_shouldThrowException_whenNotFound() {
+        // Arrange
+        when(journalRepository.existsById("non_existent")).thenReturn(false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> journalService.deleteJournal("non_existent"))
             .isInstanceOf(NoSuchElementException.class);
     }
 }

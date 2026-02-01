@@ -64,6 +64,9 @@ public class JournalServiceImpl implements JournalService {
 
     @Override
     public void deleteJournal(String id) {
+        if (!journalRepository.existsById(id)) {
+            throw new NoSuchElementException("Journal not found with id: " + id);
+        }
         journalRepository.deleteById(id);
     }
 }
