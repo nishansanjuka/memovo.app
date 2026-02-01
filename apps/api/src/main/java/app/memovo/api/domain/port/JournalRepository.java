@@ -13,4 +13,6 @@ public interface JournalRepository {
 
     // 3. Delete method
     void deleteById(String id);
+
+    boolean existsById(String id);
 }

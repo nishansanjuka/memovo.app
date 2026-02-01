@@ -60,4 +60,17 @@ class JournalControllerTest {
         assertThat(response.getBody().title()).isEqualTo("Updated Title");
         verify(journalService).updateJournal(eq(journalId), any(Journal.class));
     }
+
+    @Test
+    void deleteJournal_shouldReturnNoContent() {
+        // Arrange
+        String journalId = "journal_123";
+
+        // Act
+        ResponseEntity<Void> response = journalController.deleteJournal(journalId);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(journalService).deleteJournal(journalId);
+    }
 }

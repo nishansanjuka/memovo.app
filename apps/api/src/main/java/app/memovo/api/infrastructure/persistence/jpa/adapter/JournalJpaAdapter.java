@@ -42,4 +42,9 @@ public class JournalJpaAdapter implements JournalRepository {
     public void deleteById(String id) {
         springRepository.deleteById(id);
     }
+
+    @Override
+    public boolean existsById(String id) {
+        return springRepository.existsById(id);
+    }
 }
