@@ -33,6 +33,27 @@ class JournalControllerTest {
     private JournalController journalController;
 
     @Test
+    void getJournal_shouldReturnOk() {
+        // Arrange
+        String journalId = "journal_123";
+        String userId = "user_123";
+        Journal journal = new Journal();
+        journal.setId(journalId);
+        JournalResponse responseDto = new JournalResponse(journalId, userId, "Title", "Content", null);
+
+        when(journalService.getJournalById(journalId, userId)).thenReturn(journal);
+        when(mapper.toResponse(journal)).thenReturn(responseDto);
+
+        // Act
+        ResponseEntity<JournalResponse> response = journalController.getJournal(journalId, userId);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        verify(journalService).getJournalById(journalId, userId);
+    }
+
+    @Test
     void updateJournal_shouldReturnOk_withPartialUpdate() {
         // Arrange
         String journalId = "journal_123";

@@ -3,11 +3,13 @@ package app.memovo.api.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import app.memovo.api.application.JournalService;
@@ -44,6 +46,19 @@ public class JournalController {
         JournalResponse response = mapper.toResponse(createdJournal);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{journalId}")
+    @Operation(summary = "Get a journal entry by ID with userId validation")
+    public ResponseEntity<JournalResponse> getJournal(
+            @PathVariable String journalId,
+            @RequestParam String userId) {
+
+        Journal journal = journalService.getJournalById(journalId, userId);
+
+        JournalResponse response = mapper.toResponse(journal);
+
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{journalId}")

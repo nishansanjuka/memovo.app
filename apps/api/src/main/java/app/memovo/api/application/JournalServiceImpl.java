@@ -4,13 +4,13 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
  
 import org.springframework.stereotype.Service;
 
 import app.memovo.api.domain.model.Journal;
-import app.memovo.api.domain.port.JournalRepository; 
+import app.memovo.api.domain.port.JournalRepository;
+import app.memovo.api.security.ForbiddenException;
 
 @Service
 public class JournalServiceImpl implements JournalService {
@@ -53,8 +53,15 @@ public class JournalServiceImpl implements JournalService {
     
 
     @Override
-    public Optional<Journal> getJournalById(String id) {
-        return journalRepository.findById(id);
+    public Journal getJournalById(String journalId, String userId) {
+        Journal journal = journalRepository.findById(journalId)
+            .orElseThrow(() -> new NoSuchElementException("Journal not found with id: " + journalId));
+
+        if (!journal.getUserId().equals(userId)) {
+            throw new ForbiddenException("User " + userId + " is not authorized to access this journal.");
+        }
+
+        return journal;
     }
 
     @Override
