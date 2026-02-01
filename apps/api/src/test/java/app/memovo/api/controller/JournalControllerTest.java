@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,6 +32,25 @@ class JournalControllerTest {
 
     @InjectMocks
     private JournalController journalController;
+
+    @Test
+    void getJournals_shouldReturnList() {
+        // Arrange
+        String userId = "user_123";
+        Journal journal = new Journal();
+        JournalResponse responseDto = new JournalResponse("j_1", userId, "Title", "Content", null);
+
+        when(journalService.getJournalsByUserId(userId)).thenReturn(List.of(journal));
+        when(mapper.toResponse(journal)).thenReturn(responseDto);
+
+        // Act
+        ResponseEntity<List<JournalResponse>> response = journalController.getJournals(userId);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(1);
+        verify(journalService).getJournalsByUserId(userId);
+    }
 
     @Test
     void getJournal_shouldReturnOk() {
