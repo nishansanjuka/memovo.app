@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import app.memovo.api.domain.model.Journal;
 import app.memovo.api.domain.port.JournalRepository;
+import app.memovo.api.security.ForbiddenException;
 
 @ExtendWith(MockitoExtension.class)
 class JournalServiceImplTest {
@@ -58,32 +59,35 @@ class JournalServiceImplTest {
     }
 
     @Test
-    void updateJournal_shouldUpdateAllFields_whenAllProvided() {
+    void getJournalById_shouldReturnJournal_whenUserMatches() {
         // Arrange
-        Journal updates = new Journal();
-        updates.setTitle("New Title");
-        updates.setContent("New Content");
-        updates.setUserId("new_user");
-
         when(journalRepository.findById("journal_123")).thenReturn(Optional.of(existingJournal));
-        when(journalRepository.save(any(Journal.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        Journal result = journalService.updateJournal("journal_123", updates);
+        Journal result = journalService.getJournalById("journal_123", "user_123");
 
         // Assert
-        assertThat(result.getTitle()).isEqualTo("New Title");
-        assertThat(result.getContent()).isEqualTo("New Content");
-        assertThat(result.getUserId()).isEqualTo("new_user");
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo("journal_123");
     }
 
     @Test
-    void updateJournal_shouldThrowException_whenNotFound() {
+    void getJournalById_shouldThrowForbiddenException_whenUserMismatch() {
+        // Arrange
+        when(journalRepository.findById("journal_123")).thenReturn(Optional.of(existingJournal));
+
+        // Act & Assert
+        assertThatThrownBy(() -> journalService.getJournalById("journal_123", "wrong_user"))
+            .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void getJournalById_shouldThrowNoSuchElementException_whenNotFound() {
         // Arrange
         when(journalRepository.findById("non_existent")).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> journalService.updateJournal("non_existent", new Journal()))
+        assertThatThrownBy(() -> journalService.getJournalById("non_existent", "user_123"))
             .isInstanceOf(NoSuchElementException.class);
     }
 

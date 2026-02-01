@@ -1,7 +1,6 @@
 package app.memovo.api.application;
 
 import java.util.List;
-import java.util.Optional;
 
 import app.memovo.api.domain.model.Journal;
 
@@ -11,7 +10,7 @@ public interface JournalService {
 
     Journal updateJournal(String journalId, Journal journalUpdates);
     
-    Optional<Journal> getJournalById(String id);
+    Journal getJournalById(String journalId, String userId);
     
     List<Journal> getJournalsByUserId(String userId); 
     
