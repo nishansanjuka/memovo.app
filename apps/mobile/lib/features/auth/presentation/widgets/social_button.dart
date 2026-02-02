@@ -36,14 +36,14 @@ class _SocialButtonState extends State<SocialButton> {
         child: ElevatedButton(
           onPressed: widget.onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: AppTheme.textColor,
+            backgroundColor: AppTheme.surface(context),
+            foregroundColor: AppTheme.text(context),
             elevation: _isPressed ? 0 : 2,
             shadowColor: Colors.black.withOpacity(0.08),
             side: BorderSide(
               color: _isPressed
-                  ? AppTheme.primaryColor.withOpacity(0.3)
-                  : AppTheme.secondaryColor,
+                  ? AppTheme.primary(context).withOpacity(0.3)
+                  : AppTheme.secondary(context),
               width: _isPressed ? 1.5 : 1,
             ),
             padding: const EdgeInsets.symmetric(vertical: 16),

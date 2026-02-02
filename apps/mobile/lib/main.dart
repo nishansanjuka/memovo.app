@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/config/app_config.dart';
+import 'package:mobile/core/providers/theme_provider.dart';
 import 'package:mobile/core/theme/app_theme.dart';
 import 'package:mobile/features/home/presentation/pages/main_scaffold.dart';
 import 'package:mobile/features/landing/presentation/pages/landing_page.dart';
@@ -18,15 +19,19 @@ void main() {
   runApp(const ProviderScope(child: MemovoApp()));
 }
 
-class MemovoApp extends StatelessWidget {
+class MemovoApp extends ConsumerWidget {
   const MemovoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+
     if (!AppConfig.isValid) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeMode,
         home: Scaffold(
           body: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -34,12 +39,12 @@ class MemovoApp extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 64),
-                const SizedBox(height: 24),
+                const Gap(24),
                 const Text(
                   'Configuration Error',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
+                const Gap(16),
                 const Text(
                   'Missing CLERK_PUBLISHABLE_KEY!\n\n'
                   'Please run with:\n'
@@ -60,6 +65,8 @@ class MemovoApp extends StatelessWidget {
         title: 'Memovo',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeMode,
         home: const AppAuthGate(),
       ),
     );
@@ -130,7 +137,7 @@ class _LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.background(context),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -139,10 +146,10 @@ class _LoadingScreen extends StatelessWidget {
             Image.asset(
                   'assets/logo.png',
                   height: 100,
-                  errorBuilder: (context, _, __) => const Icon(
+                  errorBuilder: (context, _, __) => Icon(
                     Icons.auto_awesome,
                     size: 64,
-                    color: AppTheme.primaryColor,
+                    color: AppTheme.primary(context),
                   ),
                 )
                 .animate(onPlay: (controller) => controller.repeat())
@@ -156,15 +163,15 @@ class _LoadingScreen extends StatelessWidget {
               width: 200,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primary(context).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(2),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(2),
-                child: const LinearProgressIndicator(
+                child: LinearProgressIndicator(
                   backgroundColor: Colors.transparent,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    AppTheme.primaryColor,
+                    AppTheme.primary(context),
                   ),
                 ),
               ),
@@ -176,7 +183,7 @@ class _LoadingScreen extends StatelessWidget {
               "Memovo is initializing...",
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
-                color: AppTheme.subTextColor,
+                color: AppTheme.subText(context),
                 letterSpacing: 1,
               ),
             ).animate().fade(delay: 800.ms),

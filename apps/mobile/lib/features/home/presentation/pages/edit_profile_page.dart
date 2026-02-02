@@ -114,18 +114,18 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         (user?.lastName?.isNotEmpty == true ? user!.lastName![0] : "");
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.background(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppTheme.textColor),
+          icon: Icon(Icons.close, color: AppTheme.text(context)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Edit Profile',
           style: GoogleFonts.plusJakartaSans(
-            color: AppTheme.textColor,
+            color: AppTheme.text(context),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -142,7 +142,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     'Save',
                     style: GoogleFonts.plusJakartaSans(
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryColor,
+                      color: AppTheme.primary(context),
                     ),
                   ),
           ),
@@ -164,15 +164,18 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [AppTheme.primaryColor, Color(0xFF8B7FFF)],
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.primary(context),
+                          const Color(0xFF8B7FFF),
+                        ],
                       ),
                     ),
                     child: GestureDetector(
                       onTap: _pickImage,
                       child: CircleAvatar(
                         radius: 60,
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppTheme.surface(context),
                         backgroundImage: _selectedImageBytes != null
                             ? MemoryImage(_selectedImageBytes!)
                             : (imageUrl != null
@@ -184,7 +187,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryColor,
+                                  color: AppTheme.primary(context),
                                 ),
                               )
                             : null,
@@ -198,8 +201,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       onTap: _pickImage,
                       child: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primaryColor,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary(context),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -253,7 +256,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textColor,
+                color: AppTheme.text(context),
               ),
             ),
             const Gap(16),
@@ -280,7 +283,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
-                  color: AppTheme.subTextColor,
+                  color: AppTheme.subText(context),
                 ),
               ),
             ).animate().fade(delay: 400.ms),

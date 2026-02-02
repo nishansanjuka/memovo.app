@@ -22,17 +22,23 @@ class HomePage extends StatelessWidget {
     final String userName = user.firstName ?? user.username ?? "User";
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.background(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.surface(context),
         elevation: 0,
         title: Text(
-          "Memovo",
+          'Memovo',
           style: GoogleFonts.plusJakartaSans(
-            color: AppTheme.textColor,
             fontWeight: FontWeight.bold,
+            color: AppTheme.text(context),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_none, color: AppTheme.text(context)),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -44,15 +50,15 @@ class HomePage extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.primaryColor, Color(0xFF8B7FFF)],
+                gradient: LinearGradient(
+                  colors: [AppTheme.primary(context), const Color(0xFF8B7FFF)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    color: AppTheme.primary(context).withOpacity(0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -86,7 +92,7 @@ class HomePage extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: AppTheme.primaryColor,
+                      foregroundColor: AppTheme.primary(context),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 12,
@@ -113,7 +119,7 @@ class HomePage extends StatelessWidget {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textColor,
+                color: AppTheme.text(context),
               ),
             ).animate().fade(delay: 200.ms),
 
@@ -127,13 +133,13 @@ class HomePage extends StatelessWidget {
                   Icon(
                     Icons.auto_awesome_outlined,
                     size: 64,
-                    color: AppTheme.subTextColor.withOpacity(0.3),
+                    color: AppTheme.subText(context).withOpacity(0.3),
                   ),
                   const Gap(16),
                   Text(
                     "Your memories will appear here.",
                     style: GoogleFonts.plusJakartaSans(
-                      color: AppTheme.subTextColor,
+                      color: AppTheme.subText(context),
                       fontSize: 16,
                     ),
                   ),
