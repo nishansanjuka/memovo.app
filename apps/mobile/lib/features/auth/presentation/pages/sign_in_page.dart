@@ -24,8 +24,10 @@ class _SignInPageState extends State<SignInPage> {
   final _codeController = TextEditingController();
 
   bool _isLoading = false;
-  bool _needsCode = false;
   String? _errorMessage;
+
+  // Sign-in flow states
+  _SignInStep _currentStep = _SignInStep.email;
 
   late ClerkAuthState _authState;
   StreamSubscription<dynamic>? _errorSubscription;
@@ -47,27 +49,57 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   void _authListener() {
+    // User signed in successfully
     if (_authState.user != null && mounted) {
       Navigator.of(context).popUntil((route) => route.isFirst);
+      return;
     }
-    // Check if we need to verify with a code
-    if (_authState.signIn?.status == clerk.Status.needsFirstFactor &&
-        _authState.signIn?.factors.any((f) => f.strategy.requiresCode) ==
-            true) {
-      setState(() => _needsCode = true);
+
+    // Check if we need second factor (2FA/OTP)
+    final signIn = _authState.signIn;
+    if (signIn != null && signIn.status == clerk.Status.needsSecondFactor) {
+      if (mounted && _currentStep == _SignInStep.password) {
+        // Password was verified, now need OTP
+        _requestSecondFactorCode();
+      }
     }
   }
 
   void _onError(dynamic error) {
+    if (mounted) {
+      setState(() {
+        _errorMessage = error.message?.toString() ?? error.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Step 1: Validate email and move to password step (no API call yet)
+  void _submitEmail() {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() => _errorMessage = 'Please enter your email');
+      return;
+    }
+
+    // Basic email validation
+    if (!email.contains('@') || !email.contains('.')) {
+      setState(() => _errorMessage = 'Please enter a valid email');
+      return;
+    }
+
+    // Just move to password step - no API call needed
     setState(() {
-      _errorMessage = error.message?.toString() ?? error.toString();
-      _isLoading = false;
+      _errorMessage = null;
+      _currentStep = _SignInStep.password;
     });
   }
 
-  Future<void> _signInWithPassword() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      setState(() => _errorMessage = 'Please fill in all fields');
+  /// Step 2: Submit email + password together to Clerk
+  Future<void> _submitPassword() async {
+    if (_passwordController.text.isEmpty) {
+      setState(() => _errorMessage = 'Please enter your password');
       return;
     }
 
@@ -77,43 +109,50 @@ class _SignInPageState extends State<SignInPage> {
     });
 
     try {
+      // Send both email and password together - this is how Clerk works
       await _authState.attemptSignIn(
         strategy: clerk.Strategy.password,
         identifier: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      // Auth listener will handle success or 2FA requirement
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      if (mounted) {
+        setState(() => _errorMessage = e.toString());
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _signInWithEmailCode() async {
-    if (_emailController.text.isEmpty) {
-      setState(() => _errorMessage = 'Please enter your email');
-      return;
-    }
-
+  /// Request second factor verification code (after password is verified)
+  Future<void> _requestSecondFactorCode() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      await _authState.attemptSignIn(
-        strategy: clerk.Strategy.emailCode,
-        identifier: _emailController.text.trim(),
-      );
-      setState(() => _needsCode = true);
+      // Prepare the second factor with email code
+      await _authState.attemptSignIn(strategy: clerk.Strategy.emailCode);
+      if (mounted) {
+        setState(() {
+          _currentStep = _SignInStep.passwordOtp;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  Future<void> _verifyCode() async {
+  /// Step 3: Submit OTP code after password verification
+  Future<void> _submitPasswordOtp() async {
     if (_codeController.text.isEmpty) {
       setState(() => _errorMessage = 'Please enter the verification code');
       return;
@@ -130,7 +169,51 @@ class _SignInPageState extends State<SignInPage> {
         code: _codeController.text.trim(),
       );
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      if (mounted) setState(() => _errorMessage = e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  /// Alternative: Use email code instead of password
+  Future<void> _requestEmailCode() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await _authState.attemptSignIn(
+        strategy: clerk.Strategy.emailCode,
+        identifier: _emailController.text.trim(),
+      );
+      if (mounted) setState(() => _currentStep = _SignInStep.code);
+    } catch (e) {
+      if (mounted) setState(() => _errorMessage = e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  /// Submit verification code (for email code flow)
+  Future<void> _submitCode() async {
+    if (_codeController.text.isEmpty) {
+      setState(() => _errorMessage = 'Please enter the verification code');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await _authState.attemptSignIn(
+        strategy: clerk.Strategy.emailCode,
+        code: _codeController.text.trim(),
+      );
+    } catch (e) {
+      if (mounted) setState(() => _errorMessage = e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -149,6 +232,22 @@ class _SignInPageState extends State<SignInPage> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _goBack() {
+    setState(() {
+      if (_currentStep == _SignInStep.passwordOtp) {
+        // Go back to password step
+        _currentStep = _SignInStep.password;
+        _codeController.clear();
+      } else {
+        // Go back to email step
+        _currentStep = _SignInStep.email;
+        _passwordController.clear();
+        _codeController.clear();
+      }
+      _errorMessage = null;
+    });
   }
 
   @override
@@ -237,7 +336,7 @@ class _SignInPageState extends State<SignInPage> {
               ],
 
               // Form
-              if (!_needsCode) ...[
+              if (_currentStep == _SignInStep.email) ...[
                 // Email Field
                 CustomTextField(
                       label: 'Email',
@@ -249,46 +348,17 @@ class _SignInPageState extends State<SignInPage> {
                     .fade(duration: 400.ms, delay: 200.ms)
                     .slideY(begin: 0.2),
 
-                const Gap(16),
+                const Gap(24),
 
-                // Password Field
-                CustomTextField(
-                      label: 'Password',
-                      hint: 'Enter your password',
-                      controller: _passwordController,
-                      isPassword: true,
+                // Continue Button
+                _GradientButton(
+                      text: 'Continue',
+                      isLoading: _isLoading,
+                      onPressed: _submitEmail,
                     )
                     .animate()
                     .fade(duration: 400.ms, delay: 300.ms)
                     .slideY(begin: 0.2),
-
-                const Gap(24),
-
-                // Sign In Button
-                _GradientButton(
-                      text: 'Sign In',
-                      isLoading: _isLoading,
-                      onPressed: _signInWithPassword,
-                    )
-                    .animate()
-                    .fade(duration: 400.ms, delay: 400.ms)
-                    .slideY(begin: 0.2),
-
-                const Gap(16),
-
-                // Or use code
-                Center(
-                  child: TextButton(
-                    onPressed: _isLoading ? null : _signInWithEmailCode,
-                    child: Text(
-                      'Sign in with email code instead',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ).animate().fade(duration: 400.ms, delay: 450.ms),
 
                 const Gap(24),
 
@@ -312,7 +382,7 @@ class _SignInPageState extends State<SignInPage> {
                       child: Divider(color: AppTheme.secondaryColor),
                     ),
                   ],
-                ).animate().fade(duration: 400.ms, delay: 500.ms),
+                ).animate().fade(duration: 400.ms, delay: 400.ms),
 
                 const Gap(24),
 
@@ -323,9 +393,122 @@ class _SignInPageState extends State<SignInPage> {
                       onPressed: _isLoading ? () {} : _signInWithGoogle,
                     )
                     .animate()
-                    .fade(duration: 400.ms, delay: 600.ms)
+                    .fade(duration: 400.ms, delay: 500.ms)
                     .slideY(begin: 0.2),
-              ] else ...[
+              ] else if (_currentStep == _SignInStep.password) ...[
+                // Show email as readonly info
+                _EmailBadge(email: _emailController.text, onEdit: _goBack),
+
+                const Gap(24),
+
+                // Password Field
+                CustomTextField(
+                  label: 'Password',
+                  hint: 'Enter your password',
+                  controller: _passwordController,
+                  isPassword: true,
+                ).animate().fade(duration: 400.ms).slideY(begin: 0.2),
+
+                const Gap(24),
+
+                // Sign In Button
+                _GradientButton(
+                      text: 'Sign In',
+                      isLoading: _isLoading,
+                      onPressed: _submitPassword,
+                    )
+                    .animate()
+                    .fade(duration: 400.ms, delay: 100.ms)
+                    .slideY(begin: 0.2),
+
+                const Gap(16),
+
+                // Use email code instead
+                Center(
+                  child: TextButton(
+                    onPressed: _isLoading ? null : _requestEmailCode,
+                    child: Text(
+                      'Use email code instead',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ).animate().fade(duration: 400.ms, delay: 200.ms),
+              ] else if (_currentStep == _SignInStep.passwordOtp) ...[
+                // OTP Verification after password
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.verified_user_outlined,
+                      size: 48,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ).animate().scale(duration: 400.ms),
+
+                const Gap(24),
+
+                Text(
+                  'Verify your identity',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fade(delay: 100.ms),
+
+                const Gap(8),
+
+                Text(
+                  'We sent a verification code to\n${_emailController.text}',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    color: AppTheme.subTextColor,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fade(delay: 200.ms),
+
+                const Gap(32),
+
+                CustomTextField(
+                  label: 'Verification Code',
+                  hint: 'Enter 6-digit code',
+                  controller: _codeController,
+                  keyboardType: TextInputType.number,
+                ).animate().fade(delay: 300.ms).slideY(begin: 0.2),
+
+                const Gap(24),
+
+                _GradientButton(
+                  text: 'Verify & Sign In',
+                  isLoading: _isLoading,
+                  onPressed: _submitPasswordOtp,
+                ).animate().fade(delay: 400.ms).slideY(begin: 0.2),
+
+                const Gap(16),
+
+                Center(
+                  child: TextButton(
+                    onPressed: _goBack,
+                    child: Text(
+                      'Back',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ).animate().fade(delay: 500.ms),
+              ] else if (_currentStep == _SignInStep.code) ...[
                 // Code Verification
                 Center(
                   child: Container(
@@ -380,14 +563,14 @@ class _SignInPageState extends State<SignInPage> {
                 _GradientButton(
                   text: 'Verify',
                   isLoading: _isLoading,
-                  onPressed: _verifyCode,
+                  onPressed: _submitCode,
                 ).animate().fade(delay: 400.ms).slideY(begin: 0.2),
 
                 const Gap(16),
 
                 Center(
                   child: TextButton(
-                    onPressed: () => setState(() => _needsCode = false),
+                    onPressed: _goBack,
                     child: Text(
                       'Back to sign in',
                       style: GoogleFonts.plusJakartaSans(
@@ -498,3 +681,54 @@ class _GradientButton extends StatelessWidget {
     );
   }
 }
+
+/// Shows the email with an edit button to go back
+class _EmailBadge extends StatelessWidget {
+  final String email;
+  final VoidCallback onEdit;
+
+  const _EmailBadge({required this.email, required this.onEdit});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.email_outlined, color: AppTheme.primaryColor, size: 20),
+          const Gap(12),
+          Expanded(
+            child: Text(
+              email,
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.textColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: onEdit,
+            child: Text(
+              'Edit',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primaryColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sign-in flow steps
+/// Flow: email -> password -> passwordOtp (after password verification)
+/// Alternative: email -> code (email code only, no password)
+enum _SignInStep { email, password, passwordOtp, code }
