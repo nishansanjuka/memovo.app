@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "mobile (dev)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/mobile",
+      "program": "${workspaceFolder}/apps/mobile/lib/main.dart",
+      "args": [
+        "--dart-define-from-file=${workspaceFolder}/apps/mobile/config/dev.json"
+      ]
+    },
+    {
+      "name": "mobile (prod)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/mobile",
+      "program": "${workspaceFolder}/apps/mobile/lib/main.dart",
+      "args": [
+        "--dart-define-from-file=${workspaceFolder}/apps/mobile/config/prod.json"
+      ]
+    }
+  ]
+}
