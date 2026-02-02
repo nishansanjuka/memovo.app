@@ -14,3 +14,4 @@ export const configuration = (): Configuration => ({
 });
 
 export * from './env';
+export * from './config/service-registry';
