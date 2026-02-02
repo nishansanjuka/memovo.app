@@ -251,12 +251,12 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.background(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.textColor),
+          icon: Icon(Icons.arrow_back_ios, color: AppTheme.text(context)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -274,7 +274,7 @@ class _SignInPageState extends State<SignInPage> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textColor,
+                  color: AppTheme.text(context),
                 ),
               ).animate().fade(duration: 400.ms).slideX(begin: -0.1),
               const Gap(8),
@@ -282,7 +282,7 @@ class _SignInPageState extends State<SignInPage> {
                     'Sign in to continue your journey',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
-                      color: AppTheme.subTextColor,
+                      color: AppTheme.subText(context),
                     ),
                   )
                   .animate()
@@ -296,7 +296,7 @@ class _SignInPageState extends State<SignInPage> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.shade50,
+                    color: AppTheme.surface(context),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.red.shade200),
                   ),
@@ -353,21 +353,21 @@ class _SignInPageState extends State<SignInPage> {
                 // Divider
                 Row(
                   children: [
-                    const Expanded(
-                      child: Divider(color: AppTheme.secondaryColor),
+                    Expanded(
+                      child: Divider(color: AppTheme.secondary(context)),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'or continue with',
                         style: GoogleFonts.plusJakartaSans(
-                          color: AppTheme.subTextColor,
+                          color: AppTheme.subText(context),
                           fontSize: 14,
                         ),
                       ),
                     ),
-                    const Expanded(
-                      child: Divider(color: AppTheme.secondaryColor),
+                    Expanded(
+                      child: Divider(color: AppTheme.secondary(context)),
                     ),
                   ],
                 ).animate().fade(duration: 400.ms, delay: 400.ms),
@@ -418,7 +418,7 @@ class _SignInPageState extends State<SignInPage> {
                     child: Text(
                       'Use email code instead',
                       style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.primary(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -430,13 +430,13 @@ class _SignInPageState extends State<SignInPage> {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      color: AppTheme.primary(context).withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.verified_user_outlined,
                       size: 48,
-                      color: AppTheme.primaryColor,
+                      color: AppTheme.primary(context),
                     ),
                   ),
                 ).animate().scale(duration: 400.ms),
@@ -448,7 +448,7 @@ class _SignInPageState extends State<SignInPage> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textColor,
+                    color: AppTheme.text(context),
                   ),
                   textAlign: TextAlign.center,
                 ).animate().fade(delay: 100.ms),
@@ -459,7 +459,7 @@ class _SignInPageState extends State<SignInPage> {
                   'We sent a verification code to\n${_emailController.text}',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
-                    color: AppTheme.subTextColor,
+                    color: AppTheme.subText(context),
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -490,7 +490,7 @@ class _SignInPageState extends State<SignInPage> {
                     child: Text(
                       'Back',
                       style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.primary(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -502,13 +502,13 @@ class _SignInPageState extends State<SignInPage> {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppTheme.primary(context).withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.email_outlined,
                       size: 48,
-                      color: AppTheme.primaryColor,
+                      color: AppTheme.primary(context),
                     ),
                   ),
                 ).animate().scale(duration: 400.ms),
@@ -520,7 +520,7 @@ class _SignInPageState extends State<SignInPage> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textColor,
+                    color: AppTheme.text(context),
                   ),
                   textAlign: TextAlign.center,
                 ).animate().fade(delay: 100.ms),
@@ -531,7 +531,7 @@ class _SignInPageState extends State<SignInPage> {
                   'We sent a verification code to\n${_emailController.text}',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
-                    color: AppTheme.subTextColor,
+                    color: AppTheme.subText(context),
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -562,7 +562,7 @@ class _SignInPageState extends State<SignInPage> {
                     child: Text(
                       'Back to sign in',
                       style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.primary(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -579,7 +579,7 @@ class _SignInPageState extends State<SignInPage> {
                   Text(
                     "Don't have an account? ",
                     style: GoogleFonts.plusJakartaSans(
-                      color: AppTheme.subTextColor,
+                      color: AppTheme.subText(context),
                     ),
                   ),
                   GestureDetector(
@@ -592,7 +592,7 @@ class _SignInPageState extends State<SignInPage> {
                     child: Text(
                       'Sign Up',
                       style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.primary(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -625,15 +625,15 @@ class _GradientButton extends StatelessWidget {
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppTheme.primaryColor, Color(0xFF8B7FFF)],
+        gradient: LinearGradient(
+          colors: [AppTheme.primary(context), const Color(0xFF8B7FFF)],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.3),
+            color: AppTheme.primary(context).withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -694,7 +694,7 @@ class _EmailBadge extends StatelessWidget {
             child: Text(
               email,
               style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.textColor,
+                color: AppTheme.text(context),
                 fontWeight: FontWeight.w500,
               ),
             ),

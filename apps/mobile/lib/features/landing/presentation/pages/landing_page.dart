@@ -13,7 +13,7 @@ class LandingPage extends StatelessWidget {
     // using LayoutBuilder to be responsive if needed, but for mobile usually safe.
     // Safe area for notches.
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.background(context),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
@@ -38,7 +38,7 @@ class LandingPage extends StatelessWidget {
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       height: 1.2,
-                      color: AppTheme.textColor,
+                      color: AppTheme.text(context),
                     ),
                   )
                   .animate()
@@ -49,7 +49,7 @@ class LandingPage extends StatelessWidget {
                 "Experience a new way to capture memories and navigate your daily life with ease and style.",
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.subTextColor,
+                  color: AppTheme.subText(context),
                   height: 1.5,
                 ),
               ).animate().fade(duration: 600.ms, delay: 400.ms).slideY(begin: 0.3),

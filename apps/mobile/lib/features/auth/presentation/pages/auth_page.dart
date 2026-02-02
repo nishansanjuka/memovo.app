@@ -10,17 +10,13 @@ class AuthPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.background(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textColor),
+          icon: Icon(Icons.arrow_back, color: AppTheme.text(context)),
           onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Sign In or Sign Up',
-          style: TextStyle(color: AppTheme.textColor),
         ),
       ),
       body: SafeArea(

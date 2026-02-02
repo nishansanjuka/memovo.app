@@ -28,7 +28,7 @@ class _MainScaffoldState extends State<MainScaffold> {
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.surface(context),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -99,7 +99,7 @@ class _NavItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isActive
-              ? AppTheme.primaryColor.withOpacity(0.08)
+              ? AppTheme.primary(context).withOpacity(0.08)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -109,8 +109,8 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               color: isActive
-                  ? AppTheme.primaryColor
-                  : AppTheme.subTextColor.withOpacity(0.5),
+                  ? AppTheme.primary(context)
+                  : AppTheme.subText(context).withOpacity(0.5),
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -120,8 +120,8 @@ class _NavItem extends StatelessWidget {
                 fontSize: 12,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
                 color: isActive
-                    ? AppTheme.primaryColor
-                    : AppTheme.subTextColor.withOpacity(0.5),
+                    ? AppTheme.primary(context)
+                    : AppTheme.subText(context).withOpacity(0.5),
               ),
             ),
           ],
@@ -140,14 +140,14 @@ class _PlaceholderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.background(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           title,
-          style: const TextStyle(
-            color: AppTheme.textColor,
+          style: TextStyle(
+            color: AppTheme.text(context),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -156,14 +156,15 @@ class _PlaceholderPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 80, color: AppTheme.primaryColor.withOpacity(0.2)),
+            Icon(
+              icon,
+              size: 80,
+              color: AppTheme.primary(context).withOpacity(0.2),
+            ),
             const SizedBox(height: 16),
             Text(
               "$title Coming Soon",
-              style: const TextStyle(
-                fontSize: 18,
-                color: AppTheme.subTextColor,
-              ),
+              style: TextStyle(fontSize: 18, color: AppTheme.subText(context)),
             ),
           ],
         ).animate().fade().scale(begin: const Offset(0.9, 0.9)),

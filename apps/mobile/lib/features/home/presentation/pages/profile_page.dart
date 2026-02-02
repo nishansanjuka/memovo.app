@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/providers/theme_provider.dart';
 import 'package:mobile/core/theme/app_theme.dart';
 import 'package:mobile/features/home/presentation/pages/edit_profile_page.dart';
 
@@ -29,15 +30,15 @@ class ProfilePage extends ConsumerWidget {
         (user.lastName?.isNotEmpty == true ? user.lastName![0] : "");
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.background(context),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppTheme.surface(context),
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
           'Profile',
           style: GoogleFonts.plusJakartaSans(
-            color: AppTheme.textColor,
+            color: AppTheme.text(context),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -52,7 +53,7 @@ class ProfilePage extends ConsumerWidget {
             child: Text(
               "Edit",
               style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.primaryColor,
+                color: AppTheme.primary(context),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -75,8 +76,11 @@ class ProfilePage extends ConsumerWidget {
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [AppTheme.primaryColor, Color(0xFF8B7FFF)],
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.primary(context),
+                          const Color(0xFF8B7FFF),
+                        ],
                       ),
                     ),
                     child: CircleAvatar(
@@ -91,7 +95,7 @@ class ProfilePage extends ConsumerWidget {
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryColor,
+                                color: AppTheme.primary(context),
                               ),
                             )
                           : null,
@@ -111,8 +115,8 @@ class ProfilePage extends ConsumerWidget {
                       },
                       child: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primaryColor,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary(context),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -134,7 +138,7 @@ class ProfilePage extends ConsumerWidget {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textColor,
+                color: AppTheme.text(context),
               ),
             ).animate().fade(delay: 200.ms),
 
@@ -142,7 +146,7 @@ class ProfilePage extends ConsumerWidget {
               email,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
-                color: AppTheme.subTextColor,
+                color: AppTheme.subText(context),
               ),
             ).animate().fade(delay: 300.ms),
 
@@ -171,16 +175,24 @@ class ProfilePage extends ConsumerWidget {
               title: "Settings",
               items: [
                 _ProfileItem(
+                  icon: Icons.brightness_6_outlined,
+                  label: "Appearance",
+                  value: ref.watch(themeProvider) == ThemeMode.dark
+                      ? "Dark Mode"
+                      : "Light Mode",
+                  onTap: () => ref.read(themeProvider.notifier).toggleTheme(),
+                ),
+                const _ProfileItem(
                   icon: Icons.notifications_outlined,
                   label: "Notifications",
                   hasNavigation: true,
                 ),
-                _ProfileItem(
+                const _ProfileItem(
                   icon: Icons.lock_outlined,
                   label: "Privacy & Security",
                   hasNavigation: true,
                 ),
-                _ProfileItem(
+                const _ProfileItem(
                   icon: Icons.help_outline,
                   label: "Help Center",
                   hasNavigation: true,
@@ -250,14 +262,14 @@ class _ProfileSection extends StatelessWidget {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: AppTheme.subTextColor.withOpacity(0.8),
+              color: AppTheme.subText(context).withOpacity(0.8),
               letterSpacing: 0.5,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.surface(context),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -278,7 +290,7 @@ class _ProfileSection extends StatelessWidget {
                     Divider(
                       height: 1,
                       indent: 50,
-                      color: AppTheme.secondaryColor.withOpacity(0.5),
+                      color: AppTheme.secondary(context),
                     ),
                 ],
               );
@@ -295,54 +307,60 @@ class _ProfileItem extends StatelessWidget {
   final String label;
   final String? value;
   final bool hasNavigation;
+  final VoidCallback? onTap;
 
   const _ProfileItem({
     required this.icon,
     required this.label,
     this.value,
     this.hasNavigation = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(10),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primary(context).withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppTheme.primary(context), size: 20),
             ),
-            child: Icon(icon, color: AppTheme.primaryColor, size: 20),
-          ),
-          const Gap(16),
-          Expanded(
-            child: Text(
-              label,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.textColor,
+            const Gap(16),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.text(context),
+                ),
               ),
             ),
-          ),
-          if (value != null)
-            Text(
-              value!,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                color: AppTheme.subTextColor,
+            if (value != null)
+              Text(
+                value!,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  color: AppTheme.subText(context),
+                ),
               ),
-            ),
-          if (hasNavigation)
-            Icon(
-              Icons.arrow_forward_ios,
-              color: AppTheme.subTextColor.withOpacity(0.5),
-              size: 14,
-            ),
-        ],
+            if (hasNavigation)
+              Icon(
+                Icons.arrow_forward_ios,
+                color: AppTheme.subText(context).withOpacity(0.5),
+                size: 14,
+              ),
+          ],
+        ),
       ),
     );
   }

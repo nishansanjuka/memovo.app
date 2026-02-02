@@ -38,27 +38,27 @@ class _CustomTextFieldState extends State<CustomTextField> {
         Text(
           widget.label,
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppTheme.textColor,
+            color: AppTheme.text(context),
           ),
         ),
         const SizedBox(height: 8),
         AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            color: AppTheme.surface(context),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _isFocused
-                  ? AppTheme.primaryColor
-                  : AppTheme.secondaryColor,
+                  ? AppTheme.primary(context)
+                  : AppTheme.secondary(context),
               width: _isFocused ? 2 : 1,
             ),
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppTheme.primary(context).withOpacity(0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -75,15 +75,18 @@ class _CustomTextFieldState extends State<CustomTextField> {
               keyboardType: widget.keyboardType,
               onChanged: widget.onChanged,
               style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.textColor,
-                fontSize: 15,
+                fontSize: 16,
+                color: AppTheme.text(context),
+                fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 hintText: widget.hint,
                 hintStyle: GoogleFonts.plusJakartaSans(
-                  color: AppTheme.subTextColor,
-                  fontSize: 15,
+                  color: AppTheme.subText(context).withOpacity(0.5),
+                  fontSize: 16,
                 ),
+                fillColor: AppTheme.secondary(context),
+                filled: true,
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -95,7 +98,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                           _obscureText
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
-                          color: AppTheme.subTextColor,
+                          color: AppTheme.subText(context),
                           size: 22,
                         ),
                         onPressed: () {
