@@ -1,0 +1,87 @@
+# =============================================================================
+# MEMOVO.APP - Docker Ignore File
+# =============================================================================
+# Excludes unnecessary files from Docker build context
+# =============================================================================
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Node
+**/node_modules
+**/.pnpm-store
+.turbo
+
+# Build artifacts (will be rebuilt in container)
+**/dist
+**/.next
+**/build
+**/out
+**/.cache
+
+# Test files
+**/__tests__
+**/*.test.*
+**/*.spec.*
+**/test
+**/tests
+**/coverage
+**/.nyc_output
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Environment files (secrets should be passed at runtime)
+**/.env
+**/.env.*
+!**/.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Jenkins
+jenkins_backup/
+Jenkinsfile
+
+# Java
+**/target
+**/*.class
+**/*.jar.original
+
+# Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/venv
+**/.venv
+
+# Flutter/Dart
+**/build
+**/.dart_tool
+**/.packages
+**/.pub-cache
+**/ios/Pods
+**/android/.gradle
+
+# Logs
+**/*.log
+**/logs
+
+# Misc
+*.bak
+*.tmp
+*.temp

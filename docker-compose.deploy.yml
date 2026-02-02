@@ -1,0 +1,147 @@
+# =============================================================================
+# MEMOVO.APP - Docker Compose for Deployment
+# =============================================================================
+# This file orchestrates building and deploying all services as containers
+# to Google Cloud Run via Google Artifact Registry
+# =============================================================================
+
+version: '3.8'
+
+x-common-labels: &common-labels
+  app.memovo.managed-by: "jenkins"
+  app.memovo.version: "${BUILD_TAG:-latest}"
+  app.memovo.commit: "${GIT_COMMIT:-unknown}"
+
+x-common-build: &common-build
+  context: .
+  args:
+    - BUILD_TAG=${BUILD_TAG:-latest}
+    - GIT_COMMIT=${GIT_COMMIT:-unknown}
+    - NODE_ENV=production
+
+services:
+  # ===========================================================================
+  # API Service (Java Spring Boot)
+  # ===========================================================================
+  api:
+    image: ${ARTIFACT_REGISTRY:-memovo}/api:${BUILD_TAG:-latest}
+    build:
+      <<: *common-build
+      dockerfile: ./apps/api/Dockerfile
+      args:
+        - JAVA_VERSION=21
+    labels:
+      <<: *common-labels
+      app.memovo.service: "api"
+    environment:
+      - SPRING_PROFILES_ACTIVE=production
+      - SERVER_PORT=8080
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ===========================================================================
+  # Gateway Service (NestJS)
+  # ===========================================================================
+  gateway-service:
+    image: ${ARTIFACT_REGISTRY:-memovo}/gateway-service:${BUILD_TAG:-latest}
+    build:
+      <<: *common-build
+      dockerfile: ./apps/gateway-service/Dockerfile
+    labels:
+      <<: *common-labels
+      app.memovo.service: "gateway-service"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/gateway/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ===========================================================================
+  # Web App (Next.js)
+  # ===========================================================================
+  web-app:
+    image: ${ARTIFACT_REGISTRY:-memovo}/web-app:${BUILD_TAG:-latest}
+    build:
+      <<: *common-build
+      dockerfile: ./apps/web-app/Dockerfile
+    labels:
+      <<: *common-labels
+      app.memovo.service: "web-app"
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+    ports:
+      - "3010:3010"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3010/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ===========================================================================
+  # LLM Service (Python FastAPI)
+  # ===========================================================================
+  llm-service:
+    image: ${ARTIFACT_REGISTRY:-memovo}/llm-service:${BUILD_TAG:-latest}
+    build:
+      <<: *common-build
+      dockerfile: ./apps/llm-service/Dockerfile
+      args:
+        - PYTHON_VERSION=3.12
+    labels:
+      <<: *common-labels
+      app.memovo.service: "llm-service"
+    environment:
+      - ENVIRONMENT=production
+      - PORT=7000
+    ports:
+      - "7000:7000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7000/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ===========================================================================
+  # Docs Portal (Vite React)
+  # ===========================================================================
+  docs:
+    image: ${ARTIFACT_REGISTRY:-memovo}/docs:${BUILD_TAG:-latest}
+    build:
+      <<: *common-build
+      dockerfile: ./apps/docs/Dockerfile
+    labels:
+      <<: *common-labels
+      app.memovo.service: "docs"
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "4173:4173"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  default:
+    name: memovo-network
+    driver: bridge
