@@ -20,7 +20,6 @@ class HomePage extends StatelessWidget {
     }
 
     final String userName = user.firstName ?? user.username ?? "User";
-    final String? userImage = user.imageUrl;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -34,36 +33,6 @@ class HomePage extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfilePage()),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                backgroundImage: userImage != null
-                    ? NetworkImage(userImage)
-                    : null,
-                child: userImage == null
-                    ? Text(
-                        userName.isNotEmpty ? userName[0].toUpperCase() : "?",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : null,
-              ),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
