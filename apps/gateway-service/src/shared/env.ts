@@ -14,8 +14,14 @@ if (
 
 export const configSchema = z.object({
   CLERK_WEBHOOK_SIGNING_SECRET: z.string(),
-  BASE_API_URL: z.url(),
+  BASE_API_URL: z.string().url(),
+  LLM_SERVICE_URL: z.string().url(),
   API_KEY: z.string(),
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
+  CLERK_PUBLISHABLE_KEY: z.string(),
+  CLERK_SECRET_KEY: z.string(),
 });
 
 export type EnvConfig = z.infer<typeof configSchema>;
@@ -30,11 +36,18 @@ export const loadConfig = (): EnvConfig => {
 };
 
 export interface BaseConfig {
-  url: string;
+  apiUrl: string;
+  llmServiceUrl: string;
   apiKey: string;
+  nodeEnv: string;
 }
 
-export const baseConfig = (): BaseConfig => ({
-  url: loadConfig().BASE_API_URL,
-  apiKey: loadConfig().API_KEY,
-});
+export const baseConfig = (): BaseConfig => {
+  const config = loadConfig();
+  return {
+    apiUrl: config.BASE_API_URL,
+    llmServiceUrl: config.LLM_SERVICE_URL,
+    apiKey: config.API_KEY,
+    nodeEnv: config.NODE_ENV,
+  };
+};

@@ -14,7 +14,7 @@ import {
 } from '@nestjs/swagger';
 import { WEBHOOK_API_OPERATIONS } from '../constants/api-operations';
 
-@ApiTags('ClerkWebhook')
+@ApiTags('API Service - Webhooks')
 @ApiSecurity('webhook')
 @Controller('api/webhooks')
 export class ClerkWebhookController {
