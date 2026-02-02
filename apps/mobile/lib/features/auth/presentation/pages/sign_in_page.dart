@@ -108,14 +108,26 @@ class _SignInPageState extends State<SignInPage> {
       );
 
       // Check if we need second factor (2FA/OTP)
+      // For 2FA/MFA, we MUST explicitly prepare the second factor
       final signIn = _authState.signIn;
       if (signIn != null && signIn.status == clerk.Status.needsSecondFactor) {
-        // Prepare the second factor with email code
-        await _authState.attemptSignIn(strategy: clerk.Strategy.emailCode);
-        if (mounted) {
-          setState(() {
-            _currentStep = _SignInStep.passwordOtp;
-          });
+        try {
+          // Explicitly request the email code for the second factor
+          await _authState.attemptSignIn(strategy: clerk.Strategy.emailCode);
+          if (mounted) {
+            setState(() {
+              _errorMessage =
+                  null; // Clear any transient error during transition
+              _currentStep = _SignInStep.passwordOtp;
+            });
+          }
+        } catch (preparationError) {
+          if (mounted) {
+            setState(
+              () => _errorMessage =
+                  "Error sending verification code: $preparationError",
+            );
+          }
         }
       }
     } catch (e) {

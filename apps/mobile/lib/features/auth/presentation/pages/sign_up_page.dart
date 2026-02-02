@@ -98,9 +98,13 @@ class _SignUpPageState extends State<SignUpPage> {
               signUp.unverifiedFields.isNotEmpty) &&
           signUp.unverifiedFields.contains(clerk.Field.emailAddress)) {
         // Prepare email verification (sends the code)
+        // We call this ONLY if we aren't already in the verification flow
         await _authState.attemptSignUp(strategy: clerk.Strategy.emailCode);
         if (mounted) {
-          setState(() => _needsVerification = true);
+          setState(() {
+            _errorMessage = null; // Clear any transient error during transition
+            _needsVerification = true;
+          });
         }
       }
     } catch (e) {

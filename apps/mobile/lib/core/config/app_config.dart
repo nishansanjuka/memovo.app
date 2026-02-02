@@ -11,7 +11,7 @@ class AppConfig {
   /// Clerk publishable key - injected at compile time
   static const String clerkPublishableKey = String.fromEnvironment(
     'CLERK_PUBLISHABLE_KEY',
-    defaultValue: '',
+    defaultValue: 'pk_test_bW9kZXN0LWVtdS0zMy5jbGVyay5hY2NvdW50cy5kZXYk',
   );
 
   /// Google Web Client ID for OAuth (optional)
