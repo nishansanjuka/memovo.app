@@ -84,7 +84,7 @@ class JournalNotifier extends StateNotifier<AsyncValue<List<JournalEntry>>> {
       state.whenData((journals) {
         state = AsyncValue.data([created, ...journals]);
       });
-    } catch (e, st) {
+    } catch (e) {
       // Handle error
     }
   }
@@ -97,7 +97,7 @@ class JournalNotifier extends StateNotifier<AsyncValue<List<JournalEntry>>> {
           journals.map((e) => e.id == updated.id ? updated : e).toList(),
         );
       });
-    } catch (e, st) {
+    } catch (e) {
       // Handle error
     }
   }
@@ -108,7 +108,7 @@ class JournalNotifier extends StateNotifier<AsyncValue<List<JournalEntry>>> {
       state.whenData((journals) {
         state = AsyncValue.data(journals.where((e) => e.id != id).toList());
       });
-    } catch (e, st) {
+    } catch (e) {
       // Handle error
     }
   }
