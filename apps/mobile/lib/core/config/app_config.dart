@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+
 /// Environment configuration using compile-time variables.
 ///
 /// Usage: Run with --dart-define-from-file=config/dev.json
@@ -19,6 +22,26 @@ class AppConfig {
     'GOOGLE_WEB_CLIENT_ID',
     defaultValue: '',
   );
+
+  /// The raw gateway URL from environment
+  static const String _gatewayUrlBase = String.fromEnvironment(
+    'GATEWAY_URL',
+    defaultValue: 'http://192.168.8.104:4000',
+  );
+
+  /// Resolved Gateway URL (handles Android Emulator localhost mapping)
+  static String get gatewayUrl {
+    // If it's a local address and we're on Android, we need to use 10.0.2.2
+    final isLocal =
+        _gatewayUrlBase.contains('localhost') ||
+        _gatewayUrlBase.contains('127.0.0.1');
+    if (!kIsWeb && Platform.isAndroid && isLocal) {
+      return _gatewayUrlBase
+          .replaceFirst('localhost', '10.0.2.2')
+          .replaceFirst('127.0.0.1', '10.0.2.2');
+    }
+    return _gatewayUrlBase;
+  }
 
   /// Check if all required config is present
   static bool get isValid => clerkPublishableKey.isNotEmpty;
