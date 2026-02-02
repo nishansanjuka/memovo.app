@@ -54,15 +54,6 @@ class _SignInPageState extends State<SignInPage> {
       Navigator.of(context).popUntil((route) => route.isFirst);
       return;
     }
-
-    // Check if we need second factor (2FA/OTP)
-    final signIn = _authState.signIn;
-    if (signIn != null && signIn.status == clerk.Status.needsSecondFactor) {
-      if (mounted && _currentStep == _SignInStep.password) {
-        // Password was verified, now need OTP
-        _requestSecondFactorCode();
-      }
-    }
   }
 
   void _onError(dynamic error) {
@@ -115,39 +106,24 @@ class _SignInPageState extends State<SignInPage> {
         identifier: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      // Auth listener will handle success or 2FA requirement
+
+      // Check if we need second factor (2FA/OTP)
+      final signIn = _authState.signIn;
+      if (signIn != null && signIn.status == clerk.Status.needsSecondFactor) {
+        // Prepare the second factor with email code
+        await _authState.attemptSignIn(strategy: clerk.Strategy.emailCode);
+        if (mounted) {
+          setState(() {
+            _currentStep = _SignInStep.passwordOtp;
+          });
+        }
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _errorMessage = e.toString());
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  /// Request second factor verification code (after password is verified)
-  Future<void> _requestSecondFactorCode() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // Prepare the second factor with email code
-      await _authState.attemptSignIn(strategy: clerk.Strategy.emailCode);
-      if (mounted) {
-        setState(() {
-          _currentStep = _SignInStep.passwordOtp;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = e.toString();
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -442,7 +418,7 @@ class _SignInPageState extends State<SignInPage> {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppTheme.primaryColor.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -645,7 +621,7 @@ class _GradientButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+            color: AppTheme.primaryColor.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -694,9 +670,9 @@ class _EmailBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.08),
+        color: AppTheme.primaryColor.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
       ),
       child: Row(
         children: [

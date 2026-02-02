@@ -27,9 +27,10 @@ class AppConfig {
   static void debugPrint() {
     assert(() {
       print('=== APP CONFIG ===');
-      print(
-        'Clerk Key: ${clerkPublishableKey.isNotEmpty ? "${clerkPublishableKey.substring(0, 20)}..." : "NOT SET"}',
-      );
+      final keyDisplay = clerkPublishableKey.length >= 20
+          ? '${clerkPublishableKey.substring(0, 20)}...'
+          : (clerkPublishableKey.isNotEmpty ? 'SET (SHORT)' : 'NOT SET');
+      print('Clerk Key: $keyDisplay');
       print(
         'Google Client ID: ${googleClientId.isNotEmpty ? "SET" : "NOT SET"}',
       );

@@ -39,10 +39,10 @@ class _SocialButtonState extends State<SocialButton> {
             backgroundColor: Colors.white,
             foregroundColor: AppTheme.textColor,
             elevation: _isPressed ? 0 : 2,
-            shadowColor: Colors.black.withValues(alpha: 0.08),
+            shadowColor: Colors.black.withOpacity(0.08),
             side: BorderSide(
               color: _isPressed
-                  ? AppTheme.primaryColor.withValues(alpha: 0.3)
+                  ? AppTheme.primaryColor.withOpacity(0.3)
                   : AppTheme.secondaryColor,
               width: _isPressed ? 1.5 : 1,
             ),

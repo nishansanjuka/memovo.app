@@ -52,14 +52,6 @@ class _SignUpPageState extends State<SignUpPage> {
     if (_authState.user != null && mounted) {
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
-    // Check if email verification is needed
-    if (_authState.signUp?.status == clerk.Status.missingRequirements &&
-        _authState.signUp?.unverifiedFields.contains(
-              clerk.Field.emailAddress,
-            ) ==
-            true) {
-      setState(() => _needsVerification = true);
-    }
   }
 
   void _onError(dynamic error) {
@@ -100,11 +92,16 @@ class _SignUpPageState extends State<SignUpPage> {
       );
 
       // Check if verification is needed
-      if (_authState.signUp?.unverifiedFields.contains(
-            clerk.Field.emailAddress,
-          ) ==
-          true) {
-        setState(() => _needsVerification = true);
+      final signUp = _authState.signUp;
+      if (signUp != null &&
+          (signUp.status == clerk.Status.missingRequirements ||
+              signUp.unverifiedFields.isNotEmpty) &&
+          signUp.unverifiedFields.contains(clerk.Field.emailAddress)) {
+        // Prepare email verification (sends the code)
+        await _authState.attemptSignUp(strategy: clerk.Strategy.emailCode);
+        if (mounted) {
+          setState(() => _needsVerification = true);
+        }
       }
     } catch (e) {
       setState(() => _errorMessage = e.toString());
@@ -363,7 +360,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppTheme.primaryColor.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

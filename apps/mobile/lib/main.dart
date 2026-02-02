@@ -11,13 +11,6 @@ void main() {
   // Debug print config
   AppConfig.debugPrint();
 
-  if (!AppConfig.isValid) {
-    throw Exception(
-      'Missing CLERK_PUBLISHABLE_KEY!\n'
-      'Run with: flutter run --dart-define-from-file=config/dev.json',
-    );
-  }
-
   runApp(const MemovoApp());
 }
 
@@ -26,6 +19,37 @@ class MemovoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!AppConfig.isValid) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 24),
+                const Text(
+                  'Configuration Error',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Missing CLERK_PUBLISHABLE_KEY!\n\n'
+                  'Please run with:\n'
+                  'flutter run --dart-define-from-file=config/dev.json',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return ClerkAuth(
       config: ClerkAuthConfig(publishableKey: AppConfig.clerkPublishableKey),
       child: MaterialApp(
