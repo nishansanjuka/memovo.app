@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mobile/core/theme/app_theme.dart';
 import 'package:mobile/features/home/presentation/pages/home_page.dart';
 import 'package:mobile/features/home/presentation/pages/profile_page.dart';
+import 'package:mobile/features/journal/presentation/pages/journal_book_page.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -17,7 +18,7 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    const _PlaceholderPage(title: "Journals", icon: Icons.book_outlined),
+    const JournalBookPage(),
     const _PlaceholderPage(title: "Therapy", icon: Icons.psychology_outlined),
     const ProfilePage(),
   ];

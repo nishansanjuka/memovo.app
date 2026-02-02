@@ -10,13 +10,23 @@ import 'package:mobile/core/theme/app_theme.dart';
 import 'package:mobile/features/home/presentation/pages/main_scaffold.dart';
 import 'package:mobile/features/landing/presentation/pages/landing_page.dart';
 
-void main() {
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize storage for theme persistence
+  final prefs = await SharedPreferences.getInstance();
 
   // Debug print config
   AppConfig.debugPrint();
 
-  runApp(const ProviderScope(child: MemovoApp()));
+  runApp(
+    ProviderScope(
+      overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+      child: const MemovoApp(),
+    ),
+  );
 }
 
 class MemovoApp extends ConsumerWidget {
