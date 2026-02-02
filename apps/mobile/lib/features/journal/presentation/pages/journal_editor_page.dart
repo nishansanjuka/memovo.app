@@ -8,6 +8,9 @@ import 'package:mobile/core/providers/theme_provider.dart';
 import 'package:mobile/features/journal/data/models/journal_model.dart';
 import 'package:mobile/features/journal/presentation/providers/journal_provider.dart';
 import 'package:mobile/features/journal/presentation/widgets/ruled_paper.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class JournalEditorPage extends ConsumerStatefulWidget {
   final JournalEntry? entry;
@@ -22,6 +25,9 @@ class _JournalEditorPageState extends ConsumerState<JournalEditorPage> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
 
+  // Voice Typing State
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _isListening = false;
   @override
   void initState() {
     super.initState();
@@ -33,9 +39,77 @@ class _JournalEditorPageState extends ConsumerState<JournalEditorPage> {
 
   @override
   void dispose() {
+    _speech.stop();
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
+  }
+
+  Future<void> _toggleListening() async {
+    if (!_isListening) {
+      // Check permissions first
+      var status = await Permission.microphone.status;
+      if (!status.isGranted) {
+        status = await Permission.microphone.request();
+        if (!status.isGranted) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Microphone permission denied.')),
+            );
+          }
+          return;
+        }
+      }
+
+      bool available = await _speech.initialize(
+        onStatus: (status) {
+          print('STT Status: $status');
+          if (status == 'done' || status == 'notListening') {
+            if (mounted) setState(() => _isListening = false);
+          }
+        },
+        onError: (errorNotification) {
+          print('STT Error: $errorNotification');
+          if (mounted) {
+            setState(() => _isListening = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error: ${errorNotification.errorMsg}')),
+            );
+          }
+        },
+      );
+
+      if (available) {
+        setState(() => _isListening = true);
+        _speech.listen(
+          onResult: (result) {
+            if (mounted) {
+              setState(() {
+                // We append the new transcription to whatever was there
+                if (result.finalResult) {
+                  final newText = result.recognizedWords;
+                  if (newText.isNotEmpty) {
+                    final currentText = _contentController.text;
+                    _contentController.text = currentText.isEmpty
+                        ? newText
+                        : '$currentText $newText';
+
+                    // Move cursor to end
+                    _contentController.selection = TextSelection.fromPosition(
+                      TextPosition(offset: _contentController.text.length),
+                    );
+                  }
+                  _isListening = false;
+                }
+              });
+            }
+          },
+        );
+      }
+    } else {
+      setState(() => _isListening = false);
+      _speech.stop();
+    }
   }
 
   Future<void> _save() async {
@@ -161,13 +235,26 @@ class _JournalEditorPageState extends ConsumerState<JournalEditorPage> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.mic_none_rounded),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Voice typing coming soon!')),
-              );
-            },
-          ),
+                icon: Icon(
+                  _isListening ? Icons.mic : Icons.mic_none_rounded,
+                  color: _isListening ? Colors.red : AppTheme.text(context),
+                ),
+                onPressed: _toggleListening,
+              )
+              .animate(
+                onPlay: (controller) => controller.repeat(reverse: true),
+                autoPlay: _isListening,
+              )
+              .scale(
+                begin: const Offset(1, 1),
+                end: const Offset(1.2, 1.2),
+                duration: 600.ms,
+                curve: Curves.easeInOut,
+              )
+              .shimmer(
+                duration: 1.5.seconds,
+                color: Colors.red.withOpacity(0.2),
+              ),
           IconButton(
             icon: const Icon(Icons.format_list_bulleted),
             onPressed: () {},

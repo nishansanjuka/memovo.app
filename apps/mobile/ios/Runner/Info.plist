@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Memovo needs speech recognition to allow you to dictate your journal entries.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Memovo needs microphone access to allow you to record your thoughts via voice.</string>
 </dict>
 </plist>
