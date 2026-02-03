@@ -5,6 +5,11 @@
 // using Turborepo for monorepo orchestration
 // =============================================================================
 
+// Global variables (accessible in post block)
+def IS_LOCAL = false
+def IS_PR_BUILD = false
+def IS_MAIN_BUILD = false
+
 pipeline {
     agent any
     
@@ -16,24 +21,16 @@ pipeline {
     }
     
     environment {
-        // Turborepo
+        // Turborepo (mark as optional for local testing)
         TURBO_TEAM = credentials('turbo-team')
         TURBO_TOKEN = credentials('turbo-token')
         
         // Docker Registry (Google Artifact Registry)
         GCP_PROJECT_ID = credentials('gcp-project-id')
         GCP_REGION = 'us-central1'
-        ARTIFACT_REGISTRY = "${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/memovo"
-        
-        // Build Info
-        BUILD_TAG = "${env.GIT_COMMIT?.take(8) ?: 'latest'}"
         
         // Node/pnpm
         PNPM_HOME = "${WORKSPACE}/.pnpm-store"
-        
-        // Determine if this is a PR or main branch
-        IS_PR = "${env.CHANGE_ID != null}"
-        IS_MAIN = "${env.BRANCH_NAME == 'main'}"
     }
     
     tools {
@@ -49,11 +46,26 @@ pipeline {
         stage('Environment Setup') {
             steps {
                 script {
+                    // Set global variables
+                    IS_LOCAL = env.JENKINS_URL?.contains('localhost') ?: true
+                    IS_PR_BUILD = env.CHANGE_ID != null
+                    IS_MAIN_BUILD = env.BRANCH_NAME == 'main' || env.BRANCH_NAME == null // null for non-multibranch
+                    
+                    // Set BUILD_TAG safely
+                    env.BUILD_TAG = env.GIT_COMMIT ? env.GIT_COMMIT.take(8) : 'latest'
+                    env.ARTIFACT_REGISTRY = "${env.GCP_REGION}-docker.pkg.dev/${env.GCP_PROJECT_ID}/memovo"
+                    
                     echo "🚀 Starting CI/CD Pipeline"
-                    echo "Branch: ${env.BRANCH_NAME}"
-                    echo "Commit: ${env.GIT_COMMIT}"
-                    echo "Is PR: ${IS_PR}"
-                    echo "Is Main: ${IS_MAIN}"
+                    echo "Branch: ${env.BRANCH_NAME ?: 'N/A'}"
+                    echo "Commit: ${env.GIT_COMMIT ?: 'N/A'}"
+                    echo "Build Tag: ${env.BUILD_TAG}"
+                    echo "Is PR: ${IS_PR_BUILD}"
+                    echo "Is Main: ${IS_MAIN_BUILD}"
+                    echo "Is Local: ${IS_LOCAL}"
+                    
+                    if (IS_LOCAL) {
+                        echo "⚠️  Running on LOCAL Jenkins - deployment stages will be skipped"
+                    }
                 }
                 
                 // Install pnpm
@@ -244,7 +256,7 @@ pipeline {
         // =====================================================================
         stage('Integration Tests') {
             when {
-                expression { return IS_PR == 'true' }
+                expression { return IS_PR_BUILD }
             }
             steps {
                 script {
@@ -257,11 +269,31 @@ pipeline {
         }
         
         // =====================================================================
-        // STAGE: Build Docker Images (Main branch only)
+        // STAGE: Local Docker Build Test (Local Jenkins only)
+        // =====================================================================
+        stage('Local Docker Build Test') {
+            when {
+                expression { return IS_LOCAL && IS_MAIN_BUILD }
+            }
+            steps {
+                script {
+                    echo "🐳 Building Docker images locally (no push)..."
+                    sh """
+                        export ARTIFACT_REGISTRY=local
+                        export BUILD_TAG=${env.BUILD_TAG}
+                        docker compose -f docker-compose.deploy.yml build
+                    """
+                    echo "✅ Local Docker build completed successfully!"
+                }
+            }
+        }
+        
+        // =====================================================================
+        // STAGE: Build Docker Images (Main branch only, skip on local)
         // =====================================================================
         stage('Build Docker Images') {
             when {
-                expression { return IS_MAIN == 'true' }
+                expression { return IS_MAIN_BUILD && !IS_LOCAL }
             }
             steps {
                 script {
@@ -276,19 +308,19 @@ pipeline {
                     // Build all images using Docker Compose
                     sh """
                         docker compose -f docker-compose.deploy.yml build \\
-                            --build-arg BUILD_TAG=${BUILD_TAG} \\
-                            --build-arg GIT_COMMIT=${env.GIT_COMMIT}
+                            --build-arg BUILD_TAG=${env.BUILD_TAG} \\
+                            --build-arg GIT_COMMIT=${env.GIT_COMMIT ?: 'unknown'}
                     """
                 }
             }
         }
         
         // =====================================================================
-        // STAGE: Push Docker Images (Main branch only)
+        // STAGE: Push Docker Images (Main branch only, skip on local)
         // =====================================================================
         stage('Push Docker Images') {
             when {
-                expression { return IS_MAIN == 'true' }
+                expression { return IS_MAIN_BUILD && !IS_LOCAL }
             }
             steps {
                 script {
@@ -300,11 +332,11 @@ pipeline {
         }
         
         // =====================================================================
-        // STAGE: Deploy to Google Cloud Run (Main branch only)
+        // STAGE: Deploy to Google Cloud Run (Main branch only, skip on local)
         // =====================================================================
         stage('Deploy to Cloud Run') {
             when {
-                expression { return IS_MAIN == 'true' }
+                expression { return IS_MAIN_BUILD && !IS_LOCAL }
             }
             steps {
                 script {
@@ -328,23 +360,23 @@ pipeline {
     // =========================================================================
     post {
         always {
-            // Clean up workspace
-            cleanWs(
-                cleanWhenNotBuilt: false,
-                deleteDirs: true,
-                disableDeferredWipeout: true,
-                notFailBuild: true
-            )
+            node('') {
+                // Clean up workspace
+                cleanWs(
+                    cleanWhenNotBuilt: false,
+                    deleteDirs: true,
+                    disableDeferredWipeout: true,
+                    notFailBuild: true
+                )
+            }
         }
         
         success {
             script {
-                if (IS_PR == 'true') {
-                    // Update GitHub PR status
-                    githubNotify context: 'CI/CD Pipeline',
-                                 description: 'All checks passed',
-                                 status: 'SUCCESS'
-                } else if (IS_MAIN == 'true') {
+                if (IS_PR_BUILD) {
+                    // Update GitHub PR status (requires GitHub plugin)
+                    echo "✅ PR build passed - all checks successful!"
+                } else if (IS_MAIN_BUILD) {
                     echo "✅ Deployment to Cloud Run completed successfully!"
                 }
             }
@@ -352,10 +384,8 @@ pipeline {
         
         failure {
             script {
-                if (IS_PR == 'true') {
-                    githubNotify context: 'CI/CD Pipeline',
-                                 description: 'Pipeline failed',
-                                 status: 'FAILURE'
+                if (IS_PR_BUILD) {
+                    echo "❌ PR build failed!"
                 }
             }
             
