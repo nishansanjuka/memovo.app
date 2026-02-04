@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -85,77 +84,35 @@ class MemovoApp extends ConsumerWidget {
 }
 
 /// The Centralized Auth Handler (Expert UI/UX Optimized)
-/// This widget manages the three core states: Startup, SignedIn, and SignedOut.
-class AppAuthGate extends ConsumerStatefulWidget {
+/// This widget manages the transition between Startup, SignedIn, and SignedOut states.
+class AppAuthGate extends ConsumerWidget {
   const AppAuthGate({super.key});
 
   @override
-  ConsumerState<AppAuthGate> createState() => _AppAuthGateState();
-}
-
-class _AppAuthGateState extends ConsumerState<AppAuthGate> {
-  bool _handshakeComplete = false;
-  Timer? _timeoutTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    // Safety timeout: If Clerk doesn't emit anything for 5s, proceed anyway
-    _timeoutTimer = Timer(const Duration(seconds: 5), () {
-      if (mounted && !_handshakeComplete) {
-        setState(() => _handshakeComplete = true);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timeoutTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final auth = ClerkAuth.of(context);
 
-    // 1. If we already have a session/user, we've recovered it (likely from cache).
-    if (auth.session != null || auth.user != null) {
-      _handshakeComplete = true;
-      _timeoutTimer?.cancel();
-      return const MainScaffold();
-    }
-
-    // 2. If handshake was previously marked complete or timed out
-    if (_handshakeComplete) {
-      return const LandingPage();
-    }
-
-    // 3. Handshake in progress: We use StreamBuilder to wait for Clerk's definitive answer.
-    return StreamBuilder<dynamic>(
-      stream: auth.sessionTokenStream,
-      builder: (context, snapshot) {
-        // Reactive check: Did we get a session while waiting?
-        if (auth.session != null || auth.user != null) {
-          _timeoutTimer?.cancel();
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() => _handshakeComplete = true);
-          });
+    return ListenableBuilder(
+      listenable: auth,
+      builder: (context, child) {
+        // 1. If we have a session hydrated from storage, go home immediately.
+        if (auth.session != null) {
           return const MainScaffold();
         }
 
-        // If the stream is active (emitted at least once) or errored, proceed
-        if (snapshot.connectionState == ConnectionState.active ||
-            snapshot.connectionState == ConnectionState.done ||
-            snapshot.hasError) {
-          _timeoutTimer?.cancel();
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() => _handshakeComplete = true);
-          });
-          return const LandingPage();
-        }
-
-        // Default: The loading screen stays until the very first stream emission or timeout.
-        return const _LoadingScreen();
+        // 2. Definitive Auth Gate with Manual Initializing State
+        return ClerkAuthBuilder(
+          signedInBuilder: (context, _) => const MainScaffold(),
+          signedOutBuilder: (context, _) => const LandingPage(),
+          builder: (context, authState) {
+            // If we are neither signed in nor signed out, we are initializing.
+            if (authState.session == null && authState.user == null) {
+              return const _LoadingScreen();
+            }
+            // Fallback for unexpected states
+            return const LandingPage();
+          },
+        );
       },
     );
   }
