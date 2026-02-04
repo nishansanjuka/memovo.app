@@ -163,7 +163,13 @@ export class ProxyService {
       // Pattern matches segments that look like a UUID or Clerk ID (starting with user_)
       const pathParts = url.pathname.split('/');
       const newPathParts = pathParts.map((part, index) => {
-        // If current part is 'user' or 'users', and next part exists, consider it a potential userId
+        // 1. Direct 'me' replacement
+        if (part === 'me') {
+          modified = true;
+          return authenticatedUserId;
+        }
+
+        // 2. Path Parameter Injection (e.g. /users/:id or /sessions/user/:id)
         const prevPart = index > 0 ? pathParts[index - 1].toLowerCase() : '';
         if (
           (prevPart === 'user' || prevPart === 'users') &&

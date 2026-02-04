@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status, Header
 from .docs import WorkingMemoryDocs
 from ..application.models import (
     WorkingMemoryCreate,
@@ -6,7 +6,7 @@ from ..application.models import (
     WorkingMemoryResponse,
 )
 from ..application.service import working_memory_service
-from typing import List
+from typing import List, Optional
 
 router = APIRouter(prefix="/working-memory", tags=["Working Memory"])
 
@@ -68,17 +68,31 @@ async def list_memories_by_ids(ids: List[str] = Query(...)):
 
 
 @router.get("/user/{user_id}", response_model=List[WorkingMemoryResponse])
-async def get_user_history(user_id: str):
-    return await working_memory_service.get_user_memory(user_id)
+async def get_user_history(user_id: str, x_user_id: Optional[str] = Header(None)):
+    # Fallback to header if path is 'me'
+    final_user_id = x_user_id if user_id == "me" else user_id
+    if not final_user_id:
+        raise HTTPException(status_code=401, detail="User ID not provided")
+    return await working_memory_service.get_user_memory(final_user_id)
 
 
 @router.get(
     "/user/{user_id}/session/{chat_id}", response_model=List[WorkingMemoryResponse]
 )
-async def get_session_history(user_id: str, chat_id: str):
-    return await working_memory_service.get_session_memory(user_id, chat_id)
+async def get_session_history(
+    user_id: str, chat_id: str, x_user_id: Optional[str] = Header(None)
+):
+    final_user_id = x_user_id if user_id == "me" else user_id
+    if not final_user_id:
+        raise HTTPException(status_code=401, detail="User ID not provided")
+    return await working_memory_service.get_session_memory(final_user_id, chat_id)
 
 
 @router.delete("/user/{user_id}/session/{chat_id}", response_model=bool)
-async def delete_session_history(user_id: str, chat_id: str):
-    return await working_memory_service.delete_session_memory(user_id, chat_id)
+async def delete_session_history(
+    user_id: str, chat_id: str, x_user_id: Optional[str] = Header(None)
+):
+    final_user_id = x_user_id if user_id == "me" else user_id
+    if not final_user_id:
+        raise HTTPException(status_code=401, detail="User ID not provided")
+    return await working_memory_service.delete_session_memory(final_user_id, chat_id)

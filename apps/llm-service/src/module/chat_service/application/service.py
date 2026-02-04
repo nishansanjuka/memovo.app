@@ -9,7 +9,10 @@ from src.module.episodic_memory_layer.application.service import episodic_memory
 from src.module.semantic_memory_layer.application.service import SemanticMemoryService
 from src.module.semantic_memory_layer.application.models import SemanticSearchRequest
 from src.module.working_memory_layer.application.service import working_memory_service
-from src.module.working_memory_layer.application.models import WorkingMemoryCreate
+from src.module.working_memory_layer.application.models import (
+    WorkingMemoryCreate,
+    WorkingMemoryResponse,
+)
 from src.module.chat_session.application.service import chat_session_service
 from .models import ChatRequest
 from .prompts import SYSTEM_PROMPT
@@ -99,7 +102,7 @@ class ChatService:
                 "retrieving_working", "Retrieving chat history..."
             )
 
-            # Pull history (including the msg we just saved)
+            # Pull existing history
             user_working_mem = await (
                 working_memory_service.get_session_memory(
                     request.userId, request.chatId
@@ -107,6 +110,29 @@ class ChatService:
                 if request.chatId
                 else working_memory_service.get_user_memory(request.userId)
             )
+
+            # ENSURE current message is in history (prevents race condition with MongoDB indexing)
+            # Find if current message is already in retrieved set (unlikely due to timing)
+            prompt_in_history = any(
+                m.chat.get("content") == request.prompt and m.chat.get("role") == "user"
+                for m in user_working_mem
+            )
+
+            if not prompt_in_history and request.chatId:
+                # We know we just saved it, but if get_session_memory missed it, we manually add it for this stream
+                # This ensures the LLM sees it and the client's 'data' event contains it
+                current_msg_mem = WorkingMemoryResponse(
+                    id="current_user_msg",
+                    userId=request.userId,
+                    chatId=request.chatId,
+                    chat={
+                        "role": "user",
+                        "content": request.prompt,
+                        "timestamp": datetime.now().isoformat(),
+                    },
+                )
+                user_working_mem.append(current_msg_mem)
+
             # Send initial state to client once (Prevents flickering during stream)
             await stream.write_data(
                 "working_memory", [m.model_dump() for m in user_working_mem]
@@ -201,7 +227,8 @@ class ChatService:
                     await stream.write_chunk(chunk.content)
 
             # 5. Save Agent Response
-            if full_response:
+            if full_response and full_response.strip():
+                print(f"DEBUG: Saving agent response for session {request.chatId}")
                 agent_msg_id = str(uuid.uuid4())
                 await working_memory_service.create_memory(
                     WorkingMemoryCreate(
