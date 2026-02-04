@@ -203,7 +203,7 @@ class ChatService:
                             SemanticSearchRequest(
                                 userId=request.userId,
                                 prompt=request.prompt,
-                                threshold=0.7,
+                                threshold=0.6,
                             )
                         )
                     )
