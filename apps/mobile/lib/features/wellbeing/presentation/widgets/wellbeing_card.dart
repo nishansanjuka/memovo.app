@@ -32,8 +32,54 @@ class WellbeingCard extends ConsumerWidget {
       );
     }
 
+    if (wellbeing.error != null) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppTheme.surface(context),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.red.withOpacity(0.5)),
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 40),
+            const Gap(16),
+            Text(
+              "Something went wrong while fetching insights.",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.text(context),
+              ),
+            ),
+            const Gap(8),
+            Text(
+              wellbeing.error!,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                color: AppTheme.subText(context),
+              ),
+            ),
+            const Gap(16),
+            ElevatedButton.icon(
+              onPressed: () => ref
+                  .read(
+                    wellbeingProvider((userId: user.id, auth: auth)).notifier,
+                  )
+                  .fetchUsageAndInsights(),
+              icon: const Icon(Icons.refresh),
+              label: const Text("Retry"),
+            ),
+          ],
+        ),
+      );
+    }
+
     final insight = wellbeing.insight;
-    if (insight == null) return const SizedBox.shrink();
+    if (insight == null) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       width: double.infinity,
