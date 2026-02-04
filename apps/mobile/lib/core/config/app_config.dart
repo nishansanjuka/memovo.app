@@ -26,7 +26,7 @@ class AppConfig {
   /// The raw gateway URL from environment
   static const String _gatewayUrlBase = String.fromEnvironment(
     'GATEWAY_URL',
-    defaultValue: 'http://192.168.8.104:4000',
+    defaultValue: 'http://localhost:4000',
   );
 
   /// Standard network timeouts

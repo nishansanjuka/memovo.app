@@ -49,8 +49,12 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _authListener() {
-    if (_authState.user != null && mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
+    if (_authState.session != null && mounted) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      });
     }
   }
 

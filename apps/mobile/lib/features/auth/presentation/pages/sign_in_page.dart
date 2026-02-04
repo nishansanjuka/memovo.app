@@ -49,10 +49,14 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   void _authListener() {
-    // User signed in successfully
-    if (_authState.user != null && mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      return;
+    // Check for session instead of user for faster transition
+    if (_authState.session != null && mounted) {
+      // Small delay to ensure state settling before navigation
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      });
     }
   }
 

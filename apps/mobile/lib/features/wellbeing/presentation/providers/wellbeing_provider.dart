@@ -89,7 +89,6 @@ class WellbeingNotifier extends StateNotifier<WellbeingState> {
             await UsageStats.checkUsagePermission() ?? false;
         if (!isPermissionGranted) {
           await UsageStats.grantUsagePermission();
-          // Give user time to return from settings
           state = state.copyWith(
             isLoading: false,
             error: "Please grant Usage Access to see real stats.",
@@ -106,56 +105,63 @@ class WellbeingNotifier extends StateNotifier<WellbeingState> {
           endDate,
         );
 
-        // Map native stats to our AppUsage model
-        // We filter for apps with more than 1 minute of usage to keep it clean
-        realUsage = tUsage
-            .where(
-              (info) =>
-                  (int.tryParse(info.totalTimeInForeground ?? '0') ?? 0) >
-                  60000,
-            )
-            .map((info) {
-              // Extract a readable app name from package (simplified)
-              String name = info.packageName?.split('.').last ?? 'Unknown';
-              name = name[0].toUpperCase() + name.substring(1);
+        // Map and Aggregate usage by package name
+        Map<String, int> aggregatedUsage = {};
+        for (var info in tUsage) {
+          String pkg = info.packageName ?? '';
+          if (pkg.isEmpty) continue;
 
-              int minutes =
-                  (int.tryParse(info.totalTimeInForeground ?? '0') ?? 0) ~/
-                  60000;
+          // Filter out common system/background services to only show "Real Apps"
+          if (pkg.startsWith('com.android.') ||
+              pkg.startsWith('android.') ||
+              pkg.startsWith('com.google.android.gms') ||
+              pkg.startsWith('com.google.android.inputmethod') ||
+              pkg.contains('.overlay') ||
+              pkg.contains('.services')) {
+            continue;
+          }
+
+          int time = int.tryParse(info.totalTimeInForeground ?? '0') ?? 0;
+          aggregatedUsage[pkg] = (aggregatedUsage[pkg] ?? 0) + time;
+        }
+
+        // Convert to AppUsage model
+        realUsage = aggregatedUsage.entries
+            .where((e) => e.value > 60000) // At least 1 minute
+            .map((e) {
+              // Extract a readable app name from package
+              String pkg = e.key;
+              String name = pkg.split('.').last;
+
+              // Handle special cases or common name formats
+              if (pkg == 'com.whatsapp')
+                name = 'WhatsApp';
+              else if (pkg == 'com.instagram.android')
+                name = 'Instagram';
+              else if (pkg == 'com.facebook.katana')
+                name = 'Facebook';
+              else if (pkg == 'com.google.android.youtube')
+                name = 'YouTube';
+              else if (name.length > 1) {
+                name = name[0].toUpperCase() + name.substring(1);
+              }
 
               return AppUsage(
                 appName: name,
-                durationMinutes: minutes,
-                category: _guessCategory(info.packageName ?? ''),
+                durationMinutes: e.value ~/ 60000,
+                category: _guessCategory(pkg),
               );
             })
             .toList();
 
-        // Sort by usage time
+        // Sort by usage time and take top 5
         realUsage.sort(
           (a, b) => b.durationMinutes.compareTo(a.durationMinutes),
         );
-        // Take top 5
         if (realUsage.length > 5) realUsage = realUsage.sublist(0, 5);
       } else {
-        // iOS version still mock due to Apple's strict sandboxing (requires DeviceActivity entitlements)
-        realUsage = [
-          AppUsage(
-            appName: 'Messaging',
-            durationMinutes: 45,
-            category: 'Social',
-          ),
-          AppUsage(
-            appName: 'Productivity',
-            durationMinutes: 120,
-            category: 'Productivity',
-          ),
-          AppUsage(
-            appName: 'Health',
-            durationMinutes: 30,
-            category: 'Wellness',
-          ),
-        ];
+        // Stats unavailable on iOS without DeviceActivity entitlements
+        realUsage = [];
       }
 
       // 3. Fetch External Content (Spotify/YouTube) if available

@@ -90,29 +90,22 @@ class AppAuthGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final auth = ClerkAuth.of(context);
-
-    return ListenableBuilder(
-      listenable: auth,
-      builder: (context, child) {
-        // 1. If we have a session hydrated from storage, go home immediately.
-        if (auth.session != null) {
+    return ClerkAuthBuilder(
+      signedInBuilder: (context, _) => const MainScaffold(),
+      signedOutBuilder: (context, _) => const LandingPage(),
+      builder: (context, authState) {
+        // If we have a session but authState hasn't settled on signedIn yet
+        if (authState.session != null) {
           return const MainScaffold();
         }
 
-        // 2. Definitive Auth Gate with Manual Initializing State
-        return ClerkAuthBuilder(
-          signedInBuilder: (context, _) => const MainScaffold(),
-          signedOutBuilder: (context, _) => const LandingPage(),
-          builder: (context, authState) {
-            // If we are neither signed in nor signed out, we are initializing.
-            if (authState.session == null && authState.user == null) {
-              return const _LoadingScreen();
-            }
-            // Fallback for unexpected states
-            return const LandingPage();
-          },
-        );
+        // If we are initialized but definitely signed out
+        if (authState.session == null && authState.user == null) {
+          return const _LoadingScreen();
+        }
+
+        // Final fallback for signed out / error states
+        return const LandingPage();
       },
     );
   }
