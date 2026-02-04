@@ -74,7 +74,7 @@ export class ProxyService {
         // Inject userId into body if needed
         const rawBody = req.body as Record<string, unknown>;
         const body = injectUserId
-          ? this.injectUserIdIntoBody(rawBody, authenticatedUserId)
+          ? this.injectUserIdIntoBody(rawBody, authenticatedUserId, service)
           : rawBody;
         fetchOptions.body = JSON.stringify(body);
       }
@@ -101,6 +101,7 @@ export class ProxyService {
   private injectUserIdIntoBody(
     body: Record<string, unknown>,
     authenticatedUserId: string | null | undefined,
+    service?: ServiceType,
   ): Record<string, unknown> {
     if (!authenticatedUserId || !body || typeof body !== 'object') {
       return body;
@@ -114,6 +115,12 @@ export class ProxyService {
         modifiedBody[field] = authenticatedUserId;
         injected = true;
       }
+    }
+
+    // Default to adding 'userId' for LLM service if no userId field was present
+    if (service === 'llm' && !injected) {
+      modifiedBody['userId'] = authenticatedUserId;
+      injected = true;
     }
 
     if (injected) {
@@ -149,19 +156,33 @@ export class ProxyService {
       const url = new URL(path, 'http://placeholder');
       let modified = false;
 
-      // Replace path parameter for /users/:id endpoint
-      // Pattern: /api/v1/users/{someId} -> /api/v1/users/{authenticatedUserId}
-      const usersPathMatch = url.pathname.match(
-        /^(\/api\/v1\/users\/)([^/]+)(\/.*)?$/,
-      );
-      if (usersPathMatch) {
-        const [, prefix, , suffix = ''] = usersPathMatch;
-        url.pathname = `${prefix}${authenticatedUserId}${suffix}`;
-        modified = true;
-        this.logger.debug(`Replaced userId in path: ${url.pathname}`);
+      // 1. Path Parameter Injection (e.g. /users/:id or /sessions/user/:id)
+      // Generic patterns to match:
+      // - /.../users/{id}
+      // - /.../user/{id}
+      // Pattern matches segments that look like a UUID or Clerk ID (starting with user_)
+      const pathParts = url.pathname.split('/');
+      const newPathParts = pathParts.map((part, index) => {
+        // If current part is 'user' or 'users', and next part exists, consider it a potential userId
+        const prevPart = index > 0 ? pathParts[index - 1].toLowerCase() : '';
+        if (
+          (prevPart === 'user' || prevPart === 'users') &&
+          part !== authenticatedUserId
+        ) {
+          // Check if it's a placeholder or looks like a user ID
+          if (part.startsWith('user_') || part.length > 20 || part === ':id' || part === ':userId') {
+            modified = true;
+            return authenticatedUserId;
+          }
+        }
+        return part;
+      });
+
+      if (modified) {
+        url.pathname = newPathParts.join('/');
       }
 
-      // Replace any existing userId fields in query params
+      // 2. Query Parameter Injection
       for (const field of USER_ID_FIELDS) {
         if (url.searchParams.has(field)) {
           url.searchParams.set(field, authenticatedUserId);
@@ -170,19 +191,19 @@ export class ProxyService {
       }
 
       // For GET requests, add userId if not present but endpoint likely needs it
-      // Check if this is a user-specific endpoint (journals, memory, etc.)
-      if (req.method === 'GET' && !modified) {
+      if (req.method === 'GET') {
         const userEndpoints = [
           '/journals',
           '/working-memory',
           '/episodic-memory',
           '/semantic-memory',
+          '/sessions/user',
         ];
         const needsUserId = userEndpoints.some((ep) =>
           url.pathname.includes(ep),
         );
 
-        if (needsUserId) {
+        if (needsUserId && !url.searchParams.has('userId')) {
           url.searchParams.set('userId', authenticatedUserId);
           modified = true;
         }
@@ -190,7 +211,7 @@ export class ProxyService {
 
       if (modified) {
         this.logger.debug(
-          `Injected authenticated userId into query params: ${authenticatedUserId}`,
+          `Modified request path for user ${authenticatedUserId}: ${url.pathname}${url.search}`,
         );
         path = url.pathname + url.search;
       }

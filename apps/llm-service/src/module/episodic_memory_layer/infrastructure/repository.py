@@ -46,7 +46,7 @@ class EpisodicMemoryRepository:
     ) -> List[Dict[str, Any]]:
         # Find memories for a user since start_date
         cursor = self._get_collection().find(
-            {"userid": user_id, "snapshot.timestamp": {"$gte": start_date}}
+            {"userId": user_id, "snapshot.timestamp": {"$gte": start_date}}
         )
         results = []
         async for doc in cursor:

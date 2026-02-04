@@ -5,6 +5,7 @@ from typing import Optional
 class ChatRequest(BaseModel):
     # Request model for context-aware chat
     userId: str = Field(..., description="The ID of the user")
+    chatId: Optional[str] = Field(None, description="The ID of the chat session")
     prompt: str = Field(..., description="The user's message/prompt")
 
 

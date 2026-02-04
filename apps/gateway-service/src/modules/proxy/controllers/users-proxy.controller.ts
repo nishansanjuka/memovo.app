@@ -28,7 +28,7 @@ import { ProxyService } from '../../../shared/services/proxy.service';
 @ApiBearerAuth('Authorization')
 @Controller('api/v1/users')
 export class UsersProxyController {
-  constructor(private readonly proxyService: ProxyService) {}
+  constructor(private readonly proxyService: ProxyService) { }
 
   @Post()
   @ApiOperation({
@@ -62,10 +62,10 @@ export class UsersProxyController {
 
   @Get(':id')
   @ApiOperation({
-    summary: 'Get user by ID',
-    description: 'Retrieve a user by their ID',
+    summary: 'Get current user profile',
+    description: 'Retrieve your user profile. The :id parameter is automatically replaced with your Clerk ID.',
   })
-  @ApiParam({ name: 'id', description: 'User identifier' })
+  @ApiParam({ name: 'id', description: 'Your User ID (auto-injected)', example: 'me' })
   @ApiResponse({ status: 200, description: 'User details' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -78,10 +78,10 @@ export class UsersProxyController {
 
   @Put(':id')
   @ApiOperation({
-    summary: 'Update user',
-    description: 'Update an existing user',
+    summary: 'Update current user profile',
+    description: 'Update your own user profile. The :id parameter is automatically replaced.',
   })
-  @ApiParam({ name: 'id', description: 'User identifier' })
+  @ApiParam({ name: 'id', description: 'Your User ID (auto-injected)', example: 'me' })
   @ApiBody({
     description: 'User update payload',
     schema: {
@@ -106,10 +106,10 @@ export class UsersProxyController {
 
   @Delete(':id')
   @ApiOperation({
-    summary: 'Delete user',
-    description: 'Delete a user by their ID',
+    summary: 'Delete current user profile',
+    description: 'Delete your own user profile and account. The :id parameter is automatically replaced.',
   })
-  @ApiParam({ name: 'id', description: 'User identifier' })
+  @ApiParam({ name: 'id', description: 'Your User ID (auto-injected)', example: 'me' })
   @ApiResponse({ status: 204, description: 'User deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

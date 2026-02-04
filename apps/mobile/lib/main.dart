@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -94,20 +95,37 @@ class AppAuthGate extends ConsumerStatefulWidget {
 
 class _AppAuthGateState extends ConsumerState<AppAuthGate> {
   bool _handshakeComplete = false;
+  Timer? _timeoutTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Safety timeout: If Clerk doesn't emit anything for 5s, proceed anyway
+    _timeoutTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted && !_handshakeComplete) {
+        setState(() => _handshakeComplete = true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timeoutTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final auth = ClerkAuth.of(context);
 
     // 1. If we already have a session/user, we've recovered it (likely from cache).
-    // Transition to MainScaffold immediately and mark handshake as done.
     if (auth.session != null || auth.user != null) {
       _handshakeComplete = true;
+      _timeoutTimer?.cancel();
       return const MainScaffold();
     }
 
-    // 2. If handshake was previously marked complete (e.g., after signout),
-    // we show the LandingPage immediately.
+    // 2. If handshake was previously marked complete or timed out
     if (_handshakeComplete) {
       return const LandingPage();
     }
@@ -118,23 +136,25 @@ class _AppAuthGateState extends ConsumerState<AppAuthGate> {
       builder: (context, snapshot) {
         // Reactive check: Did we get a session while waiting?
         if (auth.session != null || auth.user != null) {
+          _timeoutTimer?.cancel();
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) setState(() => _handshakeComplete = true);
           });
           return const MainScaffold();
         }
 
-        // If the stream is active (emitted at least once) and still no session,
-        // it means we are definitively signed out.
+        // If the stream is active (emitted at least once) or errored, proceed
         if (snapshot.connectionState == ConnectionState.active ||
-            snapshot.connectionState == ConnectionState.done) {
+            snapshot.connectionState == ConnectionState.done ||
+            snapshot.hasError) {
+          _timeoutTimer?.cancel();
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) setState(() => _handshakeComplete = true);
           });
           return const LandingPage();
         }
 
-        // Default: The loading screen stays until the very first stream emission.
+        // Default: The loading screen stays until the very first stream emission or timeout.
         return const _LoadingScreen();
       },
     );

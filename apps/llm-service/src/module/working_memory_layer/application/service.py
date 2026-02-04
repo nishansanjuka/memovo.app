@@ -32,5 +32,14 @@ class WorkingMemoryService:
         data_list = await working_memory_repository.find_by_user(user_id)
         return [WorkingMemoryResponse(**data) for data in data_list]
 
+    async def get_session_memory(
+        self, user_id: str, chat_id: str
+    ) -> List[WorkingMemoryResponse]:
+        data_list = await working_memory_repository.find_by_session(user_id, chat_id)
+        return [WorkingMemoryResponse(**data) for data in data_list]
+
+    async def delete_session_memory(self, user_id: str, chat_id: str) -> bool:
+        return await working_memory_repository.delete_by_session(user_id, chat_id)
+
 
 working_memory_service = WorkingMemoryService()

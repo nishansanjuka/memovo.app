@@ -1,15 +1,19 @@
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/features/journal/data/models/journal_model.dart';
 import 'package:mobile/features/journal/data/repositories/journal_repository.dart';
+import 'package:mobile/features/therapy/data/repositories/therapy_repository.dart';
+import 'package:mobile/features/therapy/presentation/providers/therapy_provider.dart';
 
 final journalRepositoryProvider =
     Provider.family<JournalRepository, ClerkAuthState>((ref, auth) {
       final dio = Dio(
         BaseOptions(
-          connectTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 5),
+          baseUrl: AppConfig.gatewayUrl,
+          connectTimeout: AppConfig.connectTimeout,
+          receiveTimeout: AppConfig.receiveTimeout,
         ),
       );
 
@@ -48,9 +52,10 @@ final journalRepositoryProvider =
 
 class JournalNotifier extends StateNotifier<AsyncValue<List<JournalEntry>>> {
   final JournalRepository _repository;
+  final TherapyRepository _therapyRepository;
   final String _userId;
 
-  JournalNotifier(this._repository, this._userId)
+  JournalNotifier(this._repository, this._therapyRepository, this._userId)
     : super(const AsyncValue.loading()) {
     loadJournals();
   }
@@ -84,6 +89,22 @@ class JournalNotifier extends StateNotifier<AsyncValue<List<JournalEntry>>> {
       state.whenData((journals) {
         state = AsyncValue.data([created, ...journals]);
       });
+
+      // Also create semantic memory
+      _therapyRepository
+          .createSemanticMemory(
+            userId: _userId,
+            content: "Journal Entry: $title\n\n$content",
+            metadata: {
+              'type': 'journal',
+              'journal_id': created.id,
+              'mood': mood,
+              'tags': tags,
+            },
+          )
+          .catchError((e) {
+            print('DEBUG: Failed to create semantic memory for journal: $e');
+          });
     } catch (e) {
       // Handle error
     }
@@ -121,6 +142,7 @@ final journalProvider =
       ClerkAuthState
     >((ref, auth) {
       final repo = ref.watch(journalRepositoryProvider(auth));
+      final therapyRepo = ref.watch(therapyRepositoryProvider(auth));
       final userId = auth.user?.id ?? '';
-      return JournalNotifier(repo, userId);
+      return JournalNotifier(repo, therapyRepo, userId);
     });

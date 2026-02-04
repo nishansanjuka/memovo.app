@@ -29,7 +29,7 @@ import { ProxyService } from '../../../shared/services/proxy.service';
 @ApiBearerAuth('Authorization')
 @Controller('llm')
 export class LlmProxyController {
-  constructor(private readonly proxyService: ProxyService) {}
+  constructor(private readonly proxyService: ProxyService) { }
 
   // ============================================
   // Chat Service Endpoints
@@ -45,11 +45,10 @@ export class LlmProxyController {
     description: 'Chat request with user ID, chat ID, and user message',
     schema: {
       type: 'object',
-      required: ['user_id', 'chat_id', 'user_message'],
+      required: ['prompt'],
       properties: {
-        user_id: { type: 'string', description: 'User identifier' },
-        chat_id: { type: 'string', description: 'Chat session identifier' },
-        user_message: { type: 'string', description: 'User message content' },
+        prompt: { type: 'string', description: "User's message content" },
+        chatId: { type: 'string', description: 'Optional chat session identifier' },
       },
     },
   })
@@ -82,13 +81,13 @@ export class LlmProxyController {
     description: 'Working memory creation payload',
     schema: {
       type: 'object',
-      required: ['user_id', 'content'],
+      required: ['id', 'chat'],
       properties: {
-        user_id: { type: 'string', description: 'User identifier' },
-        content: { type: 'string', description: 'Memory content' },
-        metadata: {
+        id: { type: 'string', description: 'Unique identifier for the memory' },
+        chatId: { type: 'string', description: 'Optional chat session ID' },
+        chat: {
           type: 'object',
-          description: 'Optional metadata',
+          description: 'Chat content',
           additionalProperties: true,
         },
       },
@@ -143,10 +142,10 @@ export class LlmProxyController {
     schema: {
       type: 'object',
       properties: {
-        content: { type: 'string', description: 'Updated memory content' },
-        metadata: {
+        chatId: { type: 'string', description: 'Updated chat session ID' },
+        chat: {
           type: 'object',
-          description: 'Updated metadata',
+          description: 'Updated chat content',
           additionalProperties: true,
         },
       },
@@ -210,6 +209,67 @@ export class LlmProxyController {
     });
   }
 
+  @Get('working-memory/user/:userId')
+  @ApiOperation({
+    summary: 'Get all working memories for current user',
+    description: 'Retrieve all working memory entries for the authenticated user. The :userId parameter is automatically replaced with your ID.',
+  })
+  @ApiParam({ name: 'userId', description: 'Your User ID (auto-injected)', example: 'me' })
+  @ApiResponse({ status: 200, description: 'List of working memory entries' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getWorkingMemoryByUser(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.proxyService.proxyRequest(req, res, {
+      service: 'llm',
+      stripPrefix: '/llm',
+      timeout: 30000,
+    });
+  }
+
+  @Get('working-memory/user/:userId/session/:chatId')
+  @ApiOperation({
+    summary: 'Get session working memory',
+    description:
+      'Retrieve all working memory entries for a specific chat session of the authenticated user. The :userId parameter is automatically replaced.',
+  })
+  @ApiParam({ name: 'userId', description: 'Your User ID (auto-injected)', example: 'me' })
+  @ApiParam({ name: 'chatId', description: 'Chat session identifier' })
+  @ApiResponse({ status: 200, description: 'List of working memory entries' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getWorkingMemoryBySession(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.proxyService.proxyRequest(req, res, {
+      service: 'llm',
+      stripPrefix: '/llm',
+      timeout: 30000,
+    });
+  }
+
+  @Delete('working-memory/user/:userId/session/:chatId')
+  @ApiOperation({
+    summary: 'Delete session working memory',
+    description:
+      'Delete all working memory entries for a specific chat session of the authenticated user. The :userId parameter is automatically replaced.',
+  })
+  @ApiParam({ name: 'userId', description: 'Your User ID (auto-injected)', example: 'me' })
+  @ApiParam({ name: 'chatId', description: 'Chat session identifier' })
+  @ApiResponse({ status: 200, description: 'Session memory deleted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async deleteWorkingMemoryBySession(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.proxyService.proxyRequest(req, res, {
+      service: 'llm',
+      stripPrefix: '/llm',
+      timeout: 30000,
+    });
+  }
+
   // ============================================
   // Episodic Memory Endpoints
   // ============================================
@@ -217,19 +277,18 @@ export class LlmProxyController {
   @Post('episodic-memory')
   @ApiOperation({
     summary: 'Create episodic memory',
-    description: 'Create a new episodic memory entry for a user',
+    description: 'Create a new episodic memory entry for current user',
   })
   @ApiBody({
     description: 'Episodic memory creation payload',
     schema: {
       type: 'object',
-      required: ['user_id', 'content'],
+      required: ['id', 'snapshot'],
       properties: {
-        user_id: { type: 'string', description: 'User identifier' },
-        content: { type: 'string', description: 'Memory content' },
-        metadata: {
+        id: { type: 'string', description: 'Unique identifier for the memory' },
+        snapshot: {
           type: 'object',
-          description: 'Optional metadata',
+          description: 'Memory snapshot content',
           additionalProperties: true,
         },
       },
@@ -284,10 +343,9 @@ export class LlmProxyController {
     schema: {
       type: 'object',
       properties: {
-        content: { type: 'string', description: 'Updated memory content' },
-        metadata: {
+        snapshot: {
           type: 'object',
-          description: 'Updated metadata',
+          description: 'Updated snapshot content',
           additionalProperties: true,
         },
       },
@@ -359,21 +417,15 @@ export class LlmProxyController {
   @ApiOperation({
     summary: 'Create semantic memory',
     description:
-      'Create a semantic memory from content. Returns a real-time stream of status updates via StreamWriter.',
+      'Create a semantic memory from content for the authenticated user. Returns a real-time stream of status updates.',
   })
   @ApiBody({
     description: 'Semantic memory creation payload',
     schema: {
       type: 'object',
-      required: ['user_id', 'content'],
+      required: ['content'],
       properties: {
-        user_id: { type: 'string', description: 'User identifier' },
         content: { type: 'string', description: 'Content to process' },
-        source_type: {
-          type: 'string',
-          description: 'Type of content source',
-          enum: ['text', 'document', 'url'],
-        },
         metadata: {
           type: 'object',
           description: 'Optional metadata',
@@ -404,25 +456,19 @@ export class LlmProxyController {
   @Post('semantic-memory/search')
   @ApiOperation({
     summary: 'Search semantic memory',
-    description: 'Search semantic memory for relevant context using embeddings',
+    description: 'Search semantic memory for relevant context using embeddings (linked to current user)',
   })
   @ApiBody({
     description: 'Semantic search request',
     schema: {
       type: 'object',
-      required: ['user_id', 'query'],
+      required: ['prompt'],
       properties: {
-        user_id: { type: 'string', description: 'User identifier' },
-        query: { type: 'string', description: 'Search query' },
-        top_k: {
-          type: 'integer',
-          description: 'Number of results to return',
-          default: 10,
-        },
-        filters: {
-          type: 'object',
-          description: 'Optional filters',
-          additionalProperties: true,
+        prompt: { type: 'string', description: 'Search prompt' },
+        threshold: {
+          type: 'number',
+          description: 'Relevance score threshold',
+          default: 0.8,
         },
       },
     },
@@ -437,6 +483,109 @@ export class LlmProxyController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
+    await this.proxyService.proxyRequest(req, res, {
+      service: 'llm',
+      stripPrefix: '/llm',
+      timeout: 30000,
+    });
+  }
+
+  // ============================================
+  // Chat Session Endpoints
+  // ============================================
+
+  @Post('sessions')
+  @ApiOperation({
+    summary: 'Create chat session',
+    description: 'Manually create a new chat session',
+  })
+  @ApiBody({
+    description: 'Chat session creation payload',
+    schema: {
+      type: 'object',
+      required: ['id', 'title'],
+      properties: {
+        id: { type: 'string', description: 'Unique session ID' },
+        title: { type: 'string', description: 'Session title' },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Session created' })
+  @HttpCode(HttpStatus.CREATED)
+  async createSession(@Req() req: Request, @Res() res: Response): Promise<void> {
+    await this.proxyService.proxyRequest(req, res, {
+      service: 'llm',
+      stripPrefix: '/llm',
+      timeout: 30000,
+    });
+  }
+
+  @Get('sessions/user/:userId')
+  @ApiOperation({
+    summary: 'List user sessions',
+    description: 'Retrieve all chat sessions for the authenticated user',
+  })
+  @ApiParam({ name: 'userId', description: 'Your User ID (auto-injected)', example: 'me' })
+  @ApiResponse({ status: 200, description: 'List of chat sessions' })
+  async listUserSessions(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.proxyService.proxyRequest(req, res, {
+      service: 'llm',
+      stripPrefix: '/llm',
+      timeout: 30000,
+    });
+  }
+
+  @Get('sessions/:id')
+  @ApiOperation({
+    summary: 'Get session by ID',
+    description: 'Retrieve a specific chat session by its ID',
+  })
+  @ApiParam({ name: 'id', description: 'Session identifier' })
+  @ApiResponse({ status: 200, description: 'Chat session details' })
+  async getSession(@Req() req: Request, @Res() res: Response): Promise<void> {
+    await this.proxyService.proxyRequest(req, res, {
+      service: 'llm',
+      stripPrefix: '/llm',
+      timeout: 30000,
+    });
+  }
+
+  @Patch('sessions/:id')
+  @ApiOperation({
+    summary: 'Update session',
+    description: 'Update metadata for an existing chat session',
+  })
+  @ApiParam({ name: 'id', description: 'Session identifier' })
+  @ApiBody({
+    description: 'Session update payload',
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        lastMessage: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Session updated' })
+  async updateSession(@Req() req: Request, @Res() res: Response): Promise<void> {
+    await this.proxyService.proxyRequest(req, res, {
+      service: 'llm',
+      stripPrefix: '/llm',
+      timeout: 30000,
+    });
+  }
+
+  @Delete('sessions/:id')
+  @ApiOperation({
+    summary: 'Delete session',
+    description: 'Delete a chat session and all associated messages',
+  })
+  @ApiParam({ name: 'id', description: 'Session identifier' })
+  @ApiResponse({ status: 200, description: 'Session deleted' })
+  async deleteSession(@Req() req: Request, @Res() res: Response): Promise<void> {
     await this.proxyService.proxyRequest(req, res, {
       service: 'llm',
       stripPrefix: '/llm',

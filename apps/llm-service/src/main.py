@@ -14,6 +14,9 @@ from src.module.semantic_memory_layer.presentation.controller import (
 from src.module.chat_service.presentation.controller import (
     router as chat_router,
 )
+from src.module.chat_session.presentation.controller import (
+    router as chat_session_router,
+)
 
 
 @asynccontextmanager
@@ -46,6 +49,7 @@ app.include_router(working_memory_router)
 app.include_router(episodic_memory_router)
 app.include_router(semantic_memory_router)
 app.include_router(chat_router)
+app.include_router(chat_session_router)
 
 
 @app.get("/healthcheck")

@@ -7,7 +7,10 @@ class WorkingMemoryBase(BaseModel):
         ...,
         description="The chat content associated with this memory. Can be string, object, array, etc.",
     )
-    userid: str = Field(..., description="The ID of the user who owns this memory.")
+    userId: str = Field(..., description="The ID of the user who owns this memory.")
+    chatId: Optional[str] = Field(
+        None, description="The ID of the chat session this memory belongs to."
+    )
 
 
 class WorkingMemoryCreate(WorkingMemoryBase):
@@ -16,7 +19,7 @@ class WorkingMemoryCreate(WorkingMemoryBase):
 
 class WorkingMemoryUpdate(BaseModel):
     chat: Optional[Any] = None
-    userid: Optional[str] = None
+    userId: Optional[str] = None
 
 
 class WorkingMemoryResponse(WorkingMemoryBase):

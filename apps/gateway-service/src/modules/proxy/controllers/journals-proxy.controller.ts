@@ -29,7 +29,7 @@ import { ProxyService } from '../../../shared/services/proxy.service';
 @ApiBearerAuth('Authorization')
 @Controller('api/v1/journals')
 export class JournalsProxyController {
-  constructor(private readonly proxyService: ProxyService) {}
+  constructor(private readonly proxyService: ProxyService) { }
 
   @Post()
   @ApiOperation({
@@ -40,9 +40,8 @@ export class JournalsProxyController {
     description: 'Journal creation payload',
     schema: {
       type: 'object',
-      required: ['userId', 'content'],
+      required: ['content'],
       properties: {
-        userId: { type: 'string', description: 'User identifier' },
         content: { type: 'string', description: 'Journal content' },
         title: { type: 'string', description: 'Journal title' },
         mood: { type: 'string', description: 'User mood' },
@@ -75,8 +74,9 @@ export class JournalsProxyController {
   })
   @ApiQuery({
     name: 'userId',
-    description: 'User identifier to filter journals',
-    required: true,
+    description: 'Your User ID (auto-injected)',
+    required: false,
+    example: 'me',
   })
   @ApiResponse({ status: 200, description: 'List of journal entries' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -95,8 +95,9 @@ export class JournalsProxyController {
   @ApiParam({ name: 'journalId', description: 'Journal identifier' })
   @ApiQuery({
     name: 'userId',
-    description: 'User identifier for ownership validation',
-    required: true,
+    description: 'Your User ID (auto-injected)',
+    required: false,
+    example: 'me',
   })
   @ApiResponse({ status: 200, description: 'Journal entry details' })
   @ApiResponse({ status: 404, description: 'Journal not found' })

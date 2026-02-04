@@ -137,7 +137,32 @@ export class ServiceRegistry {
         requiresAuth: true,
       },
       {
+        pattern: '/llm/working-memory/user/:id',
+        service: 'llm',
+        requiresAuth: true,
+      },
+      {
+        pattern: '/llm/working-memory/user/:id/session/:chatId',
+        service: 'llm',
+        requiresAuth: true,
+      },
+      {
         pattern: '/llm/working-memory/:id',
+        service: 'llm',
+        requiresAuth: true,
+      },
+      {
+        pattern: '/llm/sessions',
+        service: 'llm',
+        requiresAuth: true,
+      },
+      {
+        pattern: '/llm/sessions/user/:id',
+        service: 'llm',
+        requiresAuth: true,
+      },
+      {
+        pattern: '/llm/sessions/:id',
         service: 'llm',
         requiresAuth: true,
       },

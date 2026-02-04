@@ -14,3 +14,5 @@ final appAuthStateProvider = Provider<bool?>((ref) {
   // Instead, this provider can be used to trigger global side effects if needed.
   return null;
 });
+
+final bottomNavProvider = StateProvider<int>((ref) => 0);

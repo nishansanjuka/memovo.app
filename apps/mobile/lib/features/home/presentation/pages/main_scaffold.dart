@@ -1,32 +1,30 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mobile/core/providers/app_state_provider.dart';
 import 'package:mobile/core/theme/app_theme.dart';
 import 'package:mobile/features/home/presentation/pages/home_page.dart';
 import 'package:mobile/features/home/presentation/pages/profile_page.dart';
 import 'package:mobile/features/journal/presentation/pages/journal_book_page.dart';
+import 'package:mobile/features/therapy/presentation/pages/therapy_page.dart';
 
-class MainScaffold extends StatefulWidget {
+class MainScaffold extends ConsumerWidget {
   const MainScaffold({super.key});
 
-  @override
-  State<MainScaffold> createState() => _MainScaffoldState();
-}
-
-class _MainScaffoldState extends State<MainScaffold> {
-  int _currentIndex = 0;
-
-  final List<Widget> _pages = [
-    const HomePage(),
-    const JournalBookPage(),
-    const _PlaceholderPage(title: "Therapy", icon: Icons.psychology_outlined),
-    const ProfilePage(),
+  final List<Widget> _pages = const [
+    HomePage(),
+    JournalBookPage(),
+    TherapyPage(),
+    ProfilePage(),
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(bottomNavProvider);
+
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: currentIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppTheme.surface(context),
@@ -47,26 +45,26 @@ class _MainScaffoldState extends State<MainScaffold> {
                 _NavItem(
                   icon: Icons.home_rounded,
                   label: "Home",
-                  isActive: _currentIndex == 0,
-                  onTap: () => setState(() => _currentIndex = 0),
+                  isActive: currentIndex == 0,
+                  onTap: () => ref.read(bottomNavProvider.notifier).state = 0,
                 ),
                 _NavItem(
                   icon: Icons.book_rounded,
                   label: "Journals",
-                  isActive: _currentIndex == 1,
-                  onTap: () => setState(() => _currentIndex = 1),
+                  isActive: currentIndex == 1,
+                  onTap: () => ref.read(bottomNavProvider.notifier).state = 1,
                 ),
                 _NavItem(
                   icon: Icons.auto_awesome_rounded,
                   label: "Therapy",
-                  isActive: _currentIndex == 2,
-                  onTap: () => setState(() => _currentIndex = 2),
+                  isActive: currentIndex == 2,
+                  onTap: () => ref.read(bottomNavProvider.notifier).state = 2,
                 ),
                 _NavItem(
                   icon: Icons.person_rounded,
                   label: "Settings",
-                  isActive: _currentIndex == 3,
-                  onTap: () => setState(() => _currentIndex = 3),
+                  isActive: currentIndex == 3,
+                  onTap: () => ref.read(bottomNavProvider.notifier).state = 3,
                 ),
               ],
             ),
@@ -127,48 +125,6 @@ class _NavItem extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _PlaceholderPage extends StatelessWidget {
-  final String title;
-  final IconData icon;
-
-  const _PlaceholderPage({required this.title, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background(context),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          title,
-          style: TextStyle(
-            color: AppTheme.text(context),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 80,
-              color: AppTheme.primary(context).withOpacity(0.2),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              "$title Coming Soon",
-              style: TextStyle(fontSize: 18, color: AppTheme.subText(context)),
-            ),
-          ],
-        ).animate().fade().scale(begin: const Offset(0.9, 0.9)),
       ),
     );
   }

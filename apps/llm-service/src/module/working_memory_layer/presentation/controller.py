@@ -65,3 +65,20 @@ async def delete_memory(memory_id: str):
 )
 async def list_memories_by_ids(ids: List[str] = Query(...)):
     return await working_memory_service.list_memories_by_ids(ids)
+
+
+@router.get("/user/{user_id}", response_model=List[WorkingMemoryResponse])
+async def get_user_history(user_id: str):
+    return await working_memory_service.get_user_memory(user_id)
+
+
+@router.get(
+    "/user/{user_id}/session/{chat_id}", response_model=List[WorkingMemoryResponse]
+)
+async def get_session_history(user_id: str, chat_id: str):
+    return await working_memory_service.get_session_memory(user_id, chat_id)
+
+
+@router.delete("/user/{user_id}/session/{chat_id}", response_model=bool)
+async def delete_session_history(user_id: str, chat_id: str):
+    return await working_memory_service.delete_session_memory(user_id, chat_id)

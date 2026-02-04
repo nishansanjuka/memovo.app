@@ -7,7 +7,7 @@ class EpisodicMemoryBase(BaseModel):
         ...,
         description="The snapshot content associated with this memory. Can be string, object, array, etc.",
     )
-    userid: str = Field(..., description="The ID of the user who owns this memory.")
+    userId: str = Field(..., description="The ID of the user who owns this memory.")
 
 
 class EpisodicMemoryCreate(EpisodicMemoryBase):
@@ -16,7 +16,7 @@ class EpisodicMemoryCreate(EpisodicMemoryBase):
 
 class EpisodicMemoryUpdate(BaseModel):
     snapshot: Optional[Any] = None
-    userid: Optional[str] = None
+    userId: Optional[str] = None
 
 
 class EpisodicMemoryResponse(EpisodicMemoryBase):
