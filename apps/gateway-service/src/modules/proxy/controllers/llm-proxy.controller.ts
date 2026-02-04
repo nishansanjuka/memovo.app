@@ -594,6 +594,29 @@ export class LlmProxyController {
   }
 
   // ============================================
+  // Wellbeing Endpoints
+  // ============================================
+
+  @Post('wellbeing/insights')
+  @ApiOperation({
+    summary: 'Get digital wellbeing insights',
+    description: 'Analyze app usage and mood snapshots to provide wellness insights',
+  })
+  @ApiResponse({ status: 200, description: 'Wellbeing insights response' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @HttpCode(HttpStatus.OK)
+  async getWellbeingInsights(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.proxyService.proxyRequest(req, res, {
+      service: 'llm',
+      stripPrefix: '/llm',
+      timeout: 30000,
+    });
+  }
+
+  // ============================================
   // LLM Healthcheck
   // ============================================
 

@@ -17,6 +17,9 @@ from src.module.chat_service.presentation.controller import (
 from src.module.chat_session.presentation.controller import (
     router as chat_session_router,
 )
+from src.module.wellbeing_layer.presentation.controller import (
+    router as wellbeing_router,
+)
 
 
 @asynccontextmanager
@@ -50,6 +53,7 @@ app.include_router(episodic_memory_router)
 app.include_router(semantic_memory_router)
 app.include_router(chat_router)
 app.include_router(chat_session_router)
+app.include_router(wellbeing_router)
 
 
 @app.get("/healthcheck")

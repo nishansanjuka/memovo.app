@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/providers/app_state_provider.dart';
 import 'package:mobile/core/theme/app_theme.dart';
 import 'package:mobile/features/home/presentation/pages/profile_page.dart';
+import 'package:mobile/features/wellbeing/presentation/pages/wellbeing_page.dart';
+import 'package:mobile/features/wellbeing/presentation/widgets/wellbeing_card.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -116,17 +118,27 @@ class HomePage extends ConsumerWidget {
 
             const Gap(24),
 
+            // Digital Wellbeing Assistant Card
+            const WellbeingCard(),
+
+            const Gap(24),
+
             // Quick Actions
             Row(
                   children: [
                     Expanded(
                       child: _QuickActionCard(
-                        title: "Journal",
-                        subtitle: "Write your thoughts",
-                        icon: Icons.edit_note_rounded,
-                        color: Colors.orange,
+                        title: "Wellbeing",
+                        subtitle: "Track your usage",
+                        icon: Icons.spa_rounded,
+                        color: Colors.green,
                         onTap: () {
-                          ref.read(bottomNavProvider.notifier).state = 1;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const WellbeingPage(),
+                            ),
+                          );
                         },
                       ),
                     ),

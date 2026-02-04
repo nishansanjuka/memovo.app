@@ -17,7 +17,8 @@ class TherapyRepository {
   }) async* {
     final response = await _dio.post(
       '$_baseUrl/llm/chat',
-      data: {'userId': userId, 'chatId': chatId, 'prompt': message},
+      // Gateway injects real userId into body
+      data: {'userId': 'me', 'chatId': chatId, 'prompt': message},
       options: Options(responseType: ResponseType.stream),
     );
 
@@ -28,15 +29,17 @@ class TherapyRepository {
   }
 
   Future<List<ChatSession>> getSessions(String userId) async {
-    final response = await _dio.get('$_baseUrl/llm/sessions/user/$userId');
+    // Gateway replaces 'me' with actual userId in path
+    final response = await _dio.get('$_baseUrl/llm/sessions/user/me');
     final List<dynamic> data = response.data;
     return data.map((json) => ChatSession.fromJson(json)).toList();
   }
 
   Future<List<ChatMessage>> getHistory(String userId, {String? chatId}) async {
+    // Gateway replaces 'me' with actual userId in path
     final url = chatId != null
-        ? '$_baseUrl/llm/working-memory/user/$userId/session/$chatId'
-        : '$_baseUrl/llm/working-memory/user/$userId';
+        ? '$_baseUrl/llm/working-memory/user/me/session/$chatId'
+        : '$_baseUrl/llm/working-memory/user/me';
 
     final response = await _dio.get(url);
     final List<dynamic> data = response.data;
@@ -62,7 +65,8 @@ class TherapyRepository {
   }) async {
     await _dio.post(
       '$_baseUrl/llm/semantic-memory',
-      data: {'userId': userId, 'content': content, 'metadata': metadata ?? {}},
+      // Gateway injects real userId into body
+      data: {'userId': 'me', 'content': content, 'metadata': metadata ?? {}},
     );
   }
 }
