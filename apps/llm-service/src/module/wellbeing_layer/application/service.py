@@ -9,9 +9,9 @@ from .models import WellbeingInsightResponse, AppUsage, ExternalContent
 
 class WellbeingService:
     def __init__(self):
-        # Use gemini-2.5-flash-lite for cost-efficient insights
+        # Use gemini-2.5-flash for cost-efficient insights
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash-lite",
+            model="gemini-2.5-flash",
             google_api_key=settings.GOOGLE_API_KEY,
             temperature=0.7,
         )

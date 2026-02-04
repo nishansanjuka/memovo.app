@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Header, HTTPException, Query, status
 from .docs import EpisodicMemoryDocs
 from ..application.models import (
     EpisodicMemoryCreate,
@@ -6,7 +6,7 @@ from ..application.models import (
     EpisodicMemoryResponse,
 )
 from ..application.service import episodic_memory_service
-from typing import List
+from typing import List, Optional
 
 router = APIRouter(prefix="/episodic-memory", tags=["Episodic Memory"])
 
@@ -17,7 +17,13 @@ router = APIRouter(prefix="/episodic-memory", tags=["Episodic Memory"])
     status_code=status.HTTP_201_CREATED,
     **EpisodicMemoryDocs.CREATE_MEMORY,
 )
-async def create_memory(payload: EpisodicMemoryCreate):
+async def create_memory(
+    payload: EpisodicMemoryCreate, x_user_id: Optional[str] = Header(None)
+):
+    # Fallback to header if userId is 'me'
+    if payload.userId == "me" and x_user_id:
+        payload.userId = x_user_id
+
     try:
         return await episodic_memory_service.create_memory(payload)
     except Exception as e:

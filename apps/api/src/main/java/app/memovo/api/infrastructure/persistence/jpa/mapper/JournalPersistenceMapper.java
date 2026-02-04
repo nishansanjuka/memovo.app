@@ -15,6 +15,7 @@ public class JournalPersistenceMapper {
             entity.getUser() != null ? entity.getUser().getId() : null,
             entity.getTitle(),
             entity.getContent(),
+            entity.getMood(),
             entity.getCreatedAt()
         );
     }
@@ -26,6 +27,7 @@ public class JournalPersistenceMapper {
         // User reference is set by the adapter
         entity.setTitle(domain.getTitle());
         entity.setContent(domain.getContent());
+        entity.setMood(domain.getMood());
         entity.setCreatedAt(domain.getCreatedAt());
         return entity;
     }

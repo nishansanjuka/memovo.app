@@ -37,7 +37,7 @@ class SemanticMemoryService:
     def __init__(self):
         # Initialize the LLM for summarization (using cheapest gemini model)
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash-lite",
+            model="gemini-2.5-flash",
             google_api_key=settings.GOOGLE_API_KEY,
             temperature=0,
         )
@@ -66,29 +66,45 @@ class SemanticMemoryService:
         self, request: CreateSemanticMemoryRequest, stream: StreamWriter
     ):
         # Background task to process content and push updates to the stream.
+        print(f"DEBUG: Starting processing for user: {request.userId}")
         try:
             # 1. Summarizing
+            print(f"DEBUG: [Summarizing] for user {request.userId}...")
             await stream.write(
-                "summarizing", "Summarizing content using Gemini 2.5 Flash Lite..."
+                "summarizing", "Summarizing content using Gemini 1.5 Flash..."
             )
             summary_response = await self.llm.ainvoke(
                 f"Summarize the following content into a semantic-friendly summary:\n\n{request.content}"
             )
             summary = summary_response.content
+            print(f"DEBUG: [Summarizing] Done. Summary length: {len(summary)}")
 
             # 2. Chunking
+            print(f"DEBUG: [Chunking] for user {request.userId}...")
             await stream.write("chunking", "Chunking the summary for vector storage...")
             chunks = self.text_splitter.split_text(summary)
+            print(f"DEBUG: [Chunking] Done. Created {len(chunks)} chunks.")
 
             # 3. Embedding and Storing
+            print(
+                f"DEBUG: [Storing] for user {request.userId} in namespace: user_{request.userId}"
+            )
             await stream.write(
                 "storing",
                 f"Embedding and storing {len(chunks)} chunks into Pinecone...",
             )
 
-            # Prepare metadata with userId
-            metadata = request.metadata.copy()
-            metadata["userId"] = request.userId
+            # Prepare metadata: Filter nulls and convert values to strings (Pinecone requirement for this specific setup)
+            metadata = {}
+            for k, v in request.metadata.items():
+                if v is None:
+                    continue
+                if isinstance(v, list):
+                    metadata[k] = [str(i) for i in v]
+                else:
+                    metadata[k] = str(v)
+
+            metadata["userId"] = str(request.userId)
             metadatas = [metadata for _ in chunks]
 
             # Store in Pinecone (using thread for non-async split/embed call if needed)
@@ -101,14 +117,19 @@ class SemanticMemoryService:
                 metadatas=metadatas,
                 namespace=f"user_{request.userId}",
             )
+            print(
+                f"DEBUG: [Storing] Successfully stored in Pinecone for user: {request.userId}"
+            )
 
             await stream.write("completed", "Semantic memory stored successfully.")
 
         except Exception as e:
+            print(f"ERROR: [SemanticMemory] Failed for user {request.userId}: {str(e)}")
             await stream.write("failed", f"Error occurred: {str(e)}")
 
         finally:
             await stream.close()
+            print(f"DEBUG: [Stream] Closed for user: {request.userId}")
 
     async def search_semantic_memory(self, request: SemanticSearchRequest) -> str:
         # Search semantic memory for relevant context.

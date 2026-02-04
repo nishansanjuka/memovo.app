@@ -1,7 +1,9 @@
 package app.memovo.api.application;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
  
@@ -15,21 +17,38 @@ import app.memovo.api.security.ForbiddenException;
 public class JournalServiceImpl implements JournalService {
 
     private final JournalRepository journalRepository;
+    private final LlmService llmService;
 
-    public JournalServiceImpl(JournalRepository journalRepository) {
+    public JournalServiceImpl(JournalRepository journalRepository, LlmService llmService) {
         this.journalRepository = journalRepository;
+        this.llmService = llmService;
     }
 
     @Override
     public Journal createJournal( Journal journal) {
-        
-        
         if (journal.getId() == null) {
             journal.setId(UUID.randomUUID().toString());
         }
         journal.setCreatedAt(LocalDateTime.now());
         
-        return journalRepository.save(journal);
+        Journal savedJournal = journalRepository.save(journal);
+        
+        // Trigger semantic memory creation asynchronously (conceptually, though here synchronous call to other service)
+        try {
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("type", "journal");
+            metadata.put("journal_id", savedJournal.getId());
+            metadata.put("mood", savedJournal.getMood());
+            
+            String content = String.format("Journal Entry: %s\n\n%s", 
+                savedJournal.getTitle(), savedJournal.getContent());
+            
+            llmService.createSemanticMemory(savedJournal.getUserId(), content, metadata);
+        } catch (Exception e) {
+            System.err.println("Error triggering semantic memory: " + e.getMessage());
+        }
+        
+        return savedJournal;
     }
 
     @Override
