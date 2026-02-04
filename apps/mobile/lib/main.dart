@@ -91,20 +91,18 @@ class AppAuthGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ClerkAuthBuilder(
-      signedInBuilder: (context, _) => const MainScaffold(),
-      signedOutBuilder: (context, _) => const LandingPage(),
       builder: (context, authState) {
-        // If we have a session but authState hasn't settled on signedIn yet
+        // If Clerk is still rehydrating the session from storage
+        if (!authState.isSignedIn) {
+          return const _LoadingScreen();
+        }
+
+        // Once loaded, we can deterministically decide where to go
         if (authState.session != null) {
           return const MainScaffold();
         }
 
-        // If we are initialized but definitely signed out
-        if (authState.session == null && authState.user == null) {
-          return const _LoadingScreen();
-        }
-
-        // Final fallback for signed out / error states
+        // Definitely signed out
         return const LandingPage();
       },
     );
@@ -124,17 +122,14 @@ class _LoadingScreen extends StatelessWidget {
           children: [
             // Cheesy Premium Logo Animation
             Image.asset(
-                  'assets/logo.png',
-                  height: 100,
-                  errorBuilder: (context, _, __) => Icon(
-                    Icons.auto_awesome,
-                    size: 64,
-                    color: AppTheme.primary(context),
-                  ),
-                )
-                .animate(onPlay: (controller) => controller.repeat())
-                .shimmer(duration: 2.seconds, color: Colors.white24)
-                .shake(hz: 2, curve: Curves.easeInOut),
+              'assets/logo.png',
+              height: 100,
+              errorBuilder: (context, _, __) => Icon(
+                Icons.auto_awesome,
+                size: 64,
+                color: AppTheme.primary(context),
+              ),
+            ),
 
             const Gap(40),
 
