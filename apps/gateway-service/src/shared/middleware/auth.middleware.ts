@@ -16,6 +16,11 @@ export class AuthMiddleware implements NestMiddleware {
   private clerk = clerkMiddleware();
 
   use(req: Request, res: Response, next: NextFunction) {
+    // Support token in query params for browser popups (OAuth initiation)
+    if (req.query.token && !req.headers.authorization) {
+      req.headers.authorization = `Bearer ${req.query.token}`;
+    }
+
     this.clerk(req, res, (err?: unknown) => {
       if (err) return next(err);
 

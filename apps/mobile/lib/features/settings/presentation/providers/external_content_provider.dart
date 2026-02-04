@@ -83,8 +83,14 @@ class ExternalContentNotifier extends StateNotifier<ExternalContentState> {
     }
   }
 
-  String getAuthUrl(ExternalPlatform platform) {
-    return AppConfig.gatewayUrl + _repository.getAuthorizeUrl(platform);
+  Future<String> getAuthUrl(
+    ExternalPlatform platform,
+    ClerkAuthState auth,
+  ) async {
+    final token = await auth.sessionToken();
+    final baseUrl =
+        AppConfig.gatewayUrl + _repository.getAuthorizeUrl(platform);
+    return '$baseUrl&token=${token.jwt}';
   }
 }
 

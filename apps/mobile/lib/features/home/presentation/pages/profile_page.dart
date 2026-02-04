@@ -217,7 +217,10 @@ class ProfilePage extends ConsumerWidget {
                       externalContentProvider(authState).notifier,
                     );
                     final url = Uri.parse(
-                      notifier.getAuthUrl(ExternalPlatform.spotify),
+                      await notifier.getAuthUrl(
+                        ExternalPlatform.spotify,
+                        authState,
+                      ),
                     );
                     if (await canLaunchUrl(url)) {
                       await launchUrl(
@@ -236,7 +239,10 @@ class ProfilePage extends ConsumerWidget {
                       externalContentProvider(authState).notifier,
                     );
                     final url = Uri.parse(
-                      notifier.getAuthUrl(ExternalPlatform.youtube),
+                      await notifier.getAuthUrl(
+                        ExternalPlatform.youtube,
+                        authState,
+                      ),
                     );
                     if (await canLaunchUrl(url)) {
                       await launchUrl(
