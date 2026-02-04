@@ -7,6 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/providers/theme_provider.dart';
 import 'package:mobile/core/theme/app_theme.dart';
 import 'package:mobile/features/home/presentation/pages/edit_profile_page.dart';
+import 'package:mobile/features/settings/presentation/providers/external_content_provider.dart';
+import 'package:mobile/features/settings/data/models/external_content.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -199,6 +202,52 @@ class ProfilePage extends ConsumerWidget {
                 ),
               ],
             ).animate().slideY(begin: 0.1, delay: 500.ms).fade(),
+
+            const Gap(24),
+
+            _ProfileSection(
+              title: "Integrations",
+              items: [
+                _ProfileItem(
+                  icon: Icons.music_note_outlined,
+                  label: "Spotify",
+                  value: "Connect",
+                  onTap: () async {
+                    final notifier = ref.read(
+                      externalContentProvider(authState).notifier,
+                    );
+                    final url = Uri.parse(
+                      notifier.getAuthUrl(ExternalPlatform.spotify),
+                    );
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  },
+                ),
+                _ProfileItem(
+                  icon: Icons.video_library_outlined,
+                  label: "YouTube",
+                  value: "Connect",
+                  onTap: () async {
+                    final notifier = ref.read(
+                      externalContentProvider(authState).notifier,
+                    );
+                    final url = Uri.parse(
+                      notifier.getAuthUrl(ExternalPlatform.youtube),
+                    );
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  },
+                ),
+              ],
+            ).animate().slideY(begin: 0.1, delay: 600.ms).fade(),
 
             const Gap(40),
 

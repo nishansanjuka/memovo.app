@@ -7,6 +7,9 @@ import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/features/wellbeing/data/models/usage_stats.dart';
 import 'package:mobile/features/wellbeing/data/models/wellbeing_insight.dart';
 import 'package:mobile/features/wellbeing/data/repositories/wellbeing_repository.dart';
+import 'package:mobile/features/settings/presentation/providers/external_content_provider.dart';
+import 'package:mobile/features/settings/data/models/external_content.dart';
+import 'package:mobile/features/settings/data/repositories/external_content_repository.dart';
 
 final wellbeingRepositoryProvider =
     Provider.family<WellbeingRepository, ClerkAuthState>((ref, auth) {
@@ -63,9 +66,10 @@ class WellbeingState {
 
 class WellbeingNotifier extends StateNotifier<WellbeingState> {
   final WellbeingRepository _repository;
+  final ExternalContentRepository? _externalRepository;
   final String _userId;
 
-  WellbeingNotifier(this._repository, this._userId)
+  WellbeingNotifier(this._repository, this._externalRepository, this._userId)
     : super(WellbeingState(usage: [])) {
     _init();
   }
@@ -154,8 +158,28 @@ class WellbeingNotifier extends StateNotifier<WellbeingState> {
         ];
       }
 
-      // 3. Fetch Real Insights from Backend using REAL usage
-      final insight = await _repository.getInsights(_userId, realUsage);
+      // 3. Fetch External Content (Spotify/YouTube) if available
+      List<ExternalContent>? externalContent;
+      if (_externalRepository != null) {
+        try {
+          final spotify = await _externalRepository.getRecentContent(
+            ExternalPlatform.spotify,
+          );
+          final youtube = await _externalRepository.getRecentContent(
+            ExternalPlatform.youtube,
+          );
+          externalContent = [...spotify, ...youtube];
+        } catch (_) {
+          // Ignore if integrations not connected
+        }
+      }
+
+      // 4. Fetch Real Insights from Backend using REAL usage and content
+      final insight = await _repository.getInsights(
+        _userId,
+        realUsage,
+        externalContent: externalContent,
+      );
 
       state = state.copyWith(
         usage: realUsage,
@@ -207,5 +231,8 @@ final wellbeingProvider =
       ({String userId, ClerkAuthState auth})
     >((ref, arg) {
       final repo = ref.watch(wellbeingRepositoryProvider(arg.auth));
-      return WellbeingNotifier(repo, arg.userId);
+      final externalRepo = ref.watch(
+        externalContentRepositoryProvider(arg.auth),
+      );
+      return WellbeingNotifier(repo, externalRepo, arg.userId);
     });

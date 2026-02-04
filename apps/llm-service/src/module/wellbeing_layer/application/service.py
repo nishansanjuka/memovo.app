@@ -1,10 +1,10 @@
 import json
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
 from src.shared.config import settings
 from src.module.episodic_memory_layer.application.service import episodic_memory_service
-from .models import WellbeingInsightResponse, AppUsage
+from .models import WellbeingInsightResponse, AppUsage, ExternalContent
 
 
 class WellbeingService:
@@ -17,7 +17,10 @@ class WellbeingService:
         )
 
     async def get_daily_insights(
-        self, user_id: str, current_usage: List[AppUsage]
+        self,
+        user_id: str,
+        current_usage: List[AppUsage],
+        external_content: Optional[List[ExternalContent]] = None,
     ) -> WellbeingInsightResponse:
         try:
             # 1. Get recent memories for mood tracking (last 3 days)
@@ -44,7 +47,13 @@ class WellbeingService:
             )
             total_time = sum(app.durationMinutes for app in current_usage)
 
-            # 3. LLM Analysis
+            # 3. Format External Content context (Spotify/YouTube)
+            external_context = ""
+            if external_content:
+                for content in external_content:
+                    external_context += f"- {content.platform}: {content.title} by {content.artistOrChannel}\n"
+
+            # 4. LLM Analysis
             prompt = f"""
             As a Digital Wellbeing Assistant, analyze the user's digital life and recent mood.
             
@@ -54,11 +63,15 @@ class WellbeingService:
             TODAY'S APP USAGE:
             {usage_context}
             Total Screen Time: {total_time} minutes
+
+            RECENT ENTERTAINMENT (Music/Video):
+            {external_context if external_context else "No recent music or video data available."}
             
             TASK:
-            1. Analyze the correlation between their mood and digital usage.
+            1. Analyze the correlation between their mood, app usage, and the content they are consuming (music/videos).
+               e.g. If they listen to sad music while having a low mood, or use productivity apps while listening to lo-fi.
             2. Provide 1 insightful observation.
-            3. Provide 3 actionable suggestions (e.g., "Go for a walk", "Limit Social Media", "Try a quick meditation").
+            3. Provide 3 actionable suggestions.
             
             Return the result in JSON format:
             {{
@@ -99,6 +112,11 @@ class WellbeingService:
                     ).appName
                     if current_usage
                     else "None",
+                    "connectedPlatforms": list(
+                        set(c.platform for c in external_content)
+                    )
+                    if external_content
+                    else [],
                 },
             )
         except Exception as e:
